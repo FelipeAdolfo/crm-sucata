@@ -1,6 +1,8 @@
 # ─── Stage 1: Build ───────────────────────────────────────────────────────────
 FROM node:20-slim AS builder
 
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Install dependencies first (layer cache)
@@ -18,6 +20,8 @@ RUN npm run build
 
 # ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
 FROM node:20-slim AS runtime
+
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
