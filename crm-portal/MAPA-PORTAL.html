@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>CRM Sucata - Mapa Completo do Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            color: #333;
+            text-align: justify;
+            text-align-last: left;
+        }
+        @page {
+            size: A4;
+            margin: 2cm 2cm 2.5cm 2cm;
+            @top-center { content: string(doctitle); font-size: 9pt; color: #666; }
+            @bottom-center { content: counter(page); font-size: 9pt; color: #666; }
+        }
+        @page :first {
+            margin: 0;
+            @top-center { content: none; }
+            @bottom-center { content: none; }
+        }
+        @page cover { @top-center { content: none; } @bottom-center { content: none; } }
+        @page toc { @top-center { content: none; } @bottom-center { content: none; } }
+
+        body { string-set: doctitle ""; }
+        h1 { string-set: doctitle content(); }
+
+        /* Cover */
+        .cover {
+            page: cover;
+            width: 210mm;
+            height: 297mm;
+            margin: 0;
+            position: relative;
+            overflow: hidden;
+            page-break-after: always;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+        .cover-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 80%;
+            color: white;
+        }
+        .cover-title {
+            font-size: 32pt;
+            font-weight: 700;
+            margin-bottom: 0.5cm;
+            letter-spacing: -0.5pt;
+        }
+        .cover-subtitle {
+            font-size: 16pt;
+            font-weight: 400;
+            margin-bottom: 2cm;
+            opacity: 0.9;
+        }
+        .cover-meta {
+            font-size: 11pt;
+            line-height: 2;
+            opacity: 0.8;
+        }
+        .cover-decoration {
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+        .cover-decoration-2 {
+            position: absolute;
+            bottom: -100px;
+            left: -100px;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 50%;
+        }
+
+        /* TOC */
+        .toc-page {
+            page: toc;
+            page-break-after: always;
+        }
+        .toc-title {
+            font-size: 20pt;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 1cm;
+            border-bottom: 2px solid #0f3460;
+            padding-bottom: 0.3cm;
+        }
+        .toc ul {
+            list-style: none;
+            padding: 0;
+        }
+        .toc li {
+            margin: 0.4cm 0;
+        }
+        .toc a {
+            color: #333;
+            text-decoration: none;
+            display: flex;
+            justify-content: space-between;
+        }
+        .toc a::after {
+            content: leader('.') target-counter(attr(href url), page);
+        }
+        .toc .toc-h2 {
+            font-weight: 600;
+            font-size: 12pt;
+        }
+        .toc .toc-h3 {
+            padding-left: 1cm;
+            font-size: 10.5pt;
+            color: #555;
+        }
+
+        /* Headings */
+        h1 {
+            font-size: 22pt;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-top: 0;
+            margin-bottom: 0.8cm;
+            page-break-after: avoid;
+        }
+        h2 {
+            font-size: 16pt;
+            font-weight: 600;
+            color: #0f3460;
+            margin-top: 1cm;
+            margin-bottom: 0.5cm;
+            page-break-after: avoid;
+            border-left: 4px solid #0f3460;
+            padding-left: 0.4cm;
+        }
+        h3 {
+            font-size: 13pt;
+            font-weight: 600;
+            color: #333;
+            margin-top: 0.8cm;
+            margin-bottom: 0.3cm;
+            page-break-after: avoid;
+        }
+        h4 {
+            font-size: 11.5pt;
+            font-weight: 600;
+            color: #444;
+            margin-top: 0.5cm;
+            margin-bottom: 0.2cm;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.5cm 0;
+            font-size: 10pt;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        thead {
+            display: table-header-group;
+        }
+        th, td {
+            padding: 0.3cm 0.4cm;
+            text-align: left;
+            vertical-align: top;
+        }
+        thead tr {
+            border-top: 2px solid #333;
+            border-bottom: 1.5px solid #333;
+        }
+        tbody tr {
+            border-bottom: 0.5px solid #ddd;
+        }
+        tbody tr:last-child {
+            border-bottom: 2px solid #333;
+        }
+        th {
+            font-weight: 600;
+            background: #f8f9fa;
+        }
+        tr { page-break-inside: avoid; }
+
+        /* Code / boxes */
+        .code-box {
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 0.4cm;
+            font-family: 'SF Mono', 'Courier New', monospace;
+            font-size: 9pt;
+            margin: 0.4cm 0;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .highlight-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 0.4cm 0.6cm;
+            margin: 0.5cm 0;
+        }
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 0.4cm 0.6cm;
+            margin: 0.5cm 0;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 0.3cm 0;
+            padding-left: 1.2cm;
+        }
+        li {
+            margin: 0.15cm 0;
+        }
+
+        /* Architecture diagram */
+        .arch-diagram {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 0.6cm;
+            margin: 0.5cm 0;
+            font-size: 10pt;
+        }
+        .arch-layer {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 0.3cm 0.5cm;
+            margin: 0.2cm 0;
+            text-align: center;
+        }
+        .arch-layer-user {
+            background: #e3f2fd;
+            border-color: #90caf9;
+        }
+        .arch-layer-frontend {
+            background: #f3e5f5;
+            border-color: #ce93d8;
+        }
+        .arch-layer-backend {
+            background: #e8f5e9;
+            border-color: #a5d6a7;
+        }
+        .arch-layer-db {
+            background: #fff3e0;
+            border-color: #ffcc80;
+        }
+        .arch-arrow {
+            text-align: center;
+            font-size: 14pt;
+            color: #666;
+            margin: 0.1cm 0;
+        }
+
+        /* Screen card */
+        .screen-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 0.5cm;
+            margin: 0.4cm 0;
+            page-break-inside: avoid;
+        }
+        .screen-title {
+            font-weight: 600;
+            font-size: 12pt;
+            color: #0f3460;
+            margin-bottom: 0.2cm;
+        }
+        .screen-desc {
+            font-size: 10pt;
+            color: #555;
+        }
+        .screen-meta {
+            font-size: 9pt;
+            color: #888;
+            margin-top: 0.2cm;
+        }
+
+        a { word-break: break-all; }
+
+        /* Mermaid */
+        .mermaid {
+            text-align: center;
+            margin: 0.5cm 0;
+        }
+
+        /* Prevent overflow */
+        pre, table, figure, img, svg, .mermaid, blockquote {
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ==================== COVER ==================== -->
+<div class="cover">
+    <div class="cover-decoration"></div>
+    <div class="cover-decoration-2"></div>
+    <div class="cover-content">
+        <div class="cover-title">CRM Sucata</div>
+        <div class="cover-subtitle">Mapa Completo do Portal</div>
+        <div class="cover-meta">
+            <p>Portal de Negocios e Inteligencia de Mercado</p>
+            <p>para o Setor de Sucata</p>
+            <p style="margin-top: 2cm;">24 de Abril de 2026</p>
+            <p>Versao 1.0</p>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc-page">
+    <div class="toc-title">Indice</div>
+    <nav class="toc">
+        <ul>
+            <li class="toc-h2"><a href="#sec1">1. Visao Geral do Sistema</a></li>
+            <li class="toc-h2"><a href="#sec2">2. Arquitetura Tecnica</a></li>
+            <li class="toc-h2"><a href="#sec3">3. Mapa de Telas</a></li>
+            <li class="toc-h3"><a href="#sec3-1">3.1 Telas Publicas (Sem Login)</a></li>
+            <li class="toc-h3"><a href="#sec3-2">3.2 Telas Protegidas (Com Login)</a></li>
+            <li class="toc-h3"><a href="#sec3-3">3.3 Telas de Administracao</a></li>
+            <li class="toc-h2"><a href="#sec4">4. Modulos e Funcionalidades</a></li>
+            <li class="toc-h3"><a href="#sec4-1">4.1 Modulo de Oportunidades</a></li>
+            <li class="toc-h3"><a href="#sec4-2">4.2 Modulo de Visitas</a></li>
+            <li class="toc-h3"><a href="#sec4-3">4.3 Modulo de Inteligencia de Mercado</a></li>
+            <li class="toc-h3"><a href="#sec4-4">4.4 Modulo de Relatorios</a></li>
+            <li class="toc-h3"><a href="#sec4-5">4.5 Modulo de Usuarios</a></li>
+            <li class="toc-h3"><a href="#sec4-6">4.6 Modulo de Seguranca</a></li>
+            <li class="toc-h2"><a href="#sec5">5. Perfis de Acesso (Roles)</a></li>
+            <li class="toc-h2"><a href="#sec6">6. Fluxos Principais</a></li>
+            <li class="toc-h2"><a href="#sec7">7. Stack Tecnologico</a></li>
+            <li class="toc-h2"><a href="#sec8">8. Estrutura de Pastas</a></li>
+            <li class="toc-h2"><a href="#sec9">9. Camadas de Seguranca</a></li>
+            <li class="toc-h2"><a href="#sec10">10. Configuracoes para Deploy</a></li>
+        </ul>
+    </nav>
+</div>
+
+<!-- ==================== SECAO 1 ==================== -->
+<h1 id="sec1">1. Visao Geral do Sistema</h1>
+
+<p>O <strong>CRM Sucata</strong> e um portal completo para gestao de negocios no setor de sucata, desenvolvido com foco em seguranca, usabilidade e inteligencia de mercado. O sistema permite que sucateiros parceiros, compradores, analistas e gestores colaborem em um ambiente seguro e auditado.</p>
+
+<h3>Objetivos do Sistema</h3>
+<ul>
+    <li><strong>Cadastro e gestao de oportunidades</strong> de negocio (fornecedores, sucateiros)</li>
+    <li><strong>Acompanhamento por fases</strong> do funil de vendas (Lead ate Negocio Fechado)</li>
+    <li><strong>Agendamento e validacao de visitas</strong> com verificacao por GPS</li>
+    <li><strong>Inteligencia de mercado</strong> com dados sobre concorrentes e precos</li>
+    <li><strong>Controle de acesso</strong> com aprovacao administrativa de usuarios</li>
+    <li><strong>Auditoria completa</strong> de todas as acoes no sistema</li>
+</ul>
+
+<h3>Tecnologias Principais</h3>
+<table>
+    <thead>
+        <tr><th>Camada</th><th>Tecnologia</th><th>Versao</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Frontend</td><td>React + TypeScript + Tailwind CSS</td><td>React 18</td></tr>
+        <tr><td>Backend</td><td>Node.js + Express + Prisma</td><td>Node 20</td></tr>
+        <tr><td>Banco de Dados</td><td>PostgreSQL</td><td>15+</td></tr>
+        <tr><td>ORM</td><td>Prisma</td><td>5.x</td></tr>
+        <tr><td>Autenticacao</td><td>JWT + bcrypt</td><td>padrao</td></tr>
+        <tr><td>Container</td><td>Docker</td><td>-</td></tr>
+    </tbody>
+</table>
+
+<!-- ==================== SECAO 2 ==================== -->
+<h1 id="sec2">2. Arquitetura Tecnica</h1>
+
+<h3>Diagrama de Arquitetura</h3>
+
+<div class="arch-diagram">
+    <div class="arch-layer arch-layer-user"><strong>Usuario</strong><br>Navegador Web / PWA Mobile</div>
+    <div class="arch-arrow">▼</div>
+    <div class="arch-layer arch-layer-frontend"><strong>Frontend (React)</strong><br>Vite + React Query + Zustand<br>localhost:5173 (dev) / nginx:80 (prod)</div>
+    <div class="arch-arrow">▼ HTTPS / REST API</div>
+    <div class="arch-layer arch-layer-backend"><strong>Backend (Node.js)</strong><br>Express + Prisma + Helmet<br>localhost:3001 (dev/prod)</div>
+    <div class="arch-arrow">▼ SSL</div>
+    <div class="arch-layer arch-layer-db"><strong>Banco de Dados</strong><br>PostgreSQL<br>Dados persistentes</div>
+</div>
+
+<h3>Fluxo de Requisicao</h3>
+<ol>
+    <li><strong>Usuario</strong> acessa o portal via navegador ou app PWA</li>
+    <li><strong>Frontend</strong> (React) carrega a interface e faz requisicoes REST para a API</li>
+    <li><strong>Backend</strong> (Express) recebe a requisicao, aplica middlewares de seguranca</li>
+    <li><strong>Autenticacao</strong> verifica JWT token e permissao de acesso</li>
+    <li><strong>Prisma ORM</strong> executa consultas no PostgreSQL</li>
+    <li><strong>Resposta JSON</strong> retorna ao frontend para renderizacao</li>
+</ol>
+
+<h3>Seguranca na Arquitetura</h3>
+<ul>
+    <li><strong>Helmet.js</strong> - Headers de seguranca (CSP, HSTS, X-Frame-Options)</li>
+    <li><strong>Rate Limiting</strong> - Protecao contra brute force (5 tentativas de login)</li>
+    <li><strong>CORS Restrito</strong> - Apenas origens autorizadas</li>
+    <li><strong>Input Sanitization</strong> - Remocao de HTML perigoso</li>
+    <li><strong>JWT com expiracao</strong> - Tokens de 15 minutos + refresh de 7 dias</li>
+</ul>
+
+<!-- ==================== SECAO 3 ==================== -->
+<h1 id="sec3">3. Mapa de Telas</h1>
+
+<p>O portal possui <strong>11 telas principais</strong> organizadas em tres categorias: publicas (sem autenticacao), protegidas (requerem login aprovado) e administrativas (apenas admin/diretor).</p>
+
+<h2 id="sec3-1">3.1 Telas Publicas (Sem Login)</h2>
+
+<div class="screen-card">
+    <div class="screen-title">Tela 1: Login (/login)</div>
+    <div class="screen-desc">Formulario de autenticacao com email e senha. Exibe mensagens especificas para contas pendentes, suspensas, bloqueadas ou rejeitadas. Integrado com rate limiting de 5 tentativas.</div>
+    <div class="screen-meta">Componentes: Login.tsx | Hook: useLogin | Service: authService.login</div>
+</div>
+
+<div class="screen-card">
+    <div class="screen-title">Tela 2: Registro (/register)</div>
+    <div class="screen-desc">Formulario de cadastro com validacao de senha forte (12+ caracteres, maiuscula, minuscula, numero, especial). CPF formatado automaticamente. Ao concluir, status fica PENDENTE aguardando aprovacao do admin.</div>
+    <div class="screen-meta">Componentes: Register.tsx | Hook: useRegister | Service: authService.register</div>
+</div>
+
+<h2 id="sec3-2">3.2 Telas Protegidas (Com Login Aprovado)</h2>
+
+<div class="screen-card">
+    <div class="screen-title">Tela 3: Dashboard (/dashboard)</div>
+    <div class="screen-desc">Painel principal com KPIs do pipeline (total de oportunidades, negocios fechados, taxa de conversao), ranking de sucateiros, ultimas visitas agendadas, alertas de mercado e tarefas pendentes. Graficos de pipeline e performance.</div>
+    <div class="screen-meta">Componentes: Dashboard.tsx | Hooks: useDashboard, useOpportunities | Services: dashboardService</div>
+</div>
+
+<div class="screen-card">
+    <div class="screen-title">Tela 4: Oportunidades (/opportunities)</div>
+    <div class="screen-desc">Lista completa de oportunidades com filtros por fase, tipo, regiao e responsavel. Tabela paginada com acoes de editar, excluir e visualizar detalhes. Botao para criar nova oportunidade com modal.</div>
+    <div class="screen-meta">Componentes: Opportunities.tsx, ModalNewOpportunity.tsx | Hook: useOpportunities</div>
+</div>
+
+<div class="screen-card">
+    <div class="screen-title">Tela 5: Detalhe da Oportunidade (/opportunities/:id)</div>
+    <div class="screen-desc">Pagina detalhada com abas: Info (dados basicos, endereco, tipo de sucata), Contatos (pessoas de contato da empresa), Visitas (historico e agendamento), Fotos (galeria com upload), Timeline (historico de atividades e mudancas de fase).</div>
+    <div class="screen-meta">Componentes: OpportunityDetail.tsx, TabInfo.tsx, TabContacts.tsx, TabVisits.tsx, TabPhotos.tsx, TabTimeline.tsx</div>
+</div>
+
+<div class="screen-card">
+    <div class="screen-title">Tela 6: Visitas (/visits)</div>
+    <div class="screen-desc">Calendario e lista de visitas agendadas. Filtros por status (agendada, confirmada, em andamento, concluida, cancelada). Cadastro de novas visitas com data, objetivos e checklist. Validacao por GPS no momento da visita.</div>
+    <div class="screen-meta">Componentes: Visits.tsx | Hooks: useVisits, useCreateVisit, useUpdateVisit</div>
+</div>
+
+<div class="screen-card">
+    <div class="screen-title">Tela 7: Inteligencia de Mercado (/market-intel)</div>
+    <div class="screen-desc">Cadastro e consulta de dados de mercado: precos da concorrencia, novos competidores, variacao de precos, mudancas de fornecedores. Filtros por tipo, regiao e periodo.</div>
+    <div class="screen-meta">Componentes: MarketIntelligence.tsx | Service: api (direto)</div>
+</div>
+
+<div class="screen-card">
+    <div class="screen-title">Tela 8: Relatorios (/reports)</div>
+    <div class="screen-desc">Relatorios gerenciais: pipeline de oportunidades (por fase), conversoes (por mes), desempenho de visitas, exportacao para CSV. Requer perfil Gerente ou superior.</div>
+    <div class="screen-meta">Componentes: Reports.tsx | Service: api (direto) | Requer: MANAGER+</div>
+</div>
+
+<div class="screen-card">
+    <div class="screen-title">Tela 9: Usuarios (/users)</div>
+    <div class="screen-desc">Lista de usuarios do sistema com filtros por perfil e status. Admin pode suspender, reativar e alterar perfis. Visualizacao de dados cadastrais.</div>
+    <div class="screen-meta">Componentes: Users.tsx | Service: api (direto) | Requer: ADMIN</div>
+</div>
+
+<div class="screen-card">
+    <div class="screen-title">Tela 10: Configuracoes (/settings)</div>
+    <div class="screen-desc">Perfil do usuario logado: dados pessoais, alteracao de senha (com validacao de senha forte), preferencias do sistema.</div>
+    <div class="screen-meta">Componentes: Settings.tsx | Hook: useMe, useChangePassword</div>
+</div>
+
+<h2 id="sec3-3">3.3 Telas de Administracao</h2>
+
+<div class="screen-card">
+    <div class="screen-title">Tela 11: Aprovacao de Usuarios (/admin/user-approval)</div>
+    <div class="screen-desc">Painel exclusivo para ADMIN e DIRETOR. Lista usuarios com status PENDENTE. Permite aprovar (com escolha de perfil) ou rejeitar (com motivo). Notificacao automatica ao usuario aprovado.</div>
+    <div class="screen-meta">Componentes: UserApproval.tsx | Hooks: usePendingUsers, useApproveUser, useRejectUser | Requer: ADMIN/DIRECTOR</div>
+</div>
+
+<!-- ==================== SECAO 4 ==================== -->
+<h1 id="sec4">4. Modulos e Funcionalidades</h1>
+
+<h2 id="sec4-1">4.1 Modulo de Oportunidades</h2>
+
+<table>
+    <thead>
+        <tr><th>Funcionalidade</th><th>Descricao</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Cadastro de oportunidade</td><td>Formulario com dados basicos, endereco, tipo de documento (PF/PJ)</td><td>Implementado</td></tr>
+        <tr><td>Fases do funil</td><td>10 fases: Lead, Contato, Fora de Perfil, Baixa Geracao Direcionar/Entrega, Visita Agendada, Em Negociacao, Negocio Fechado, Relacao Comercial</td><td>Implementado</td></tr>
+        <tr><td>Classificacao Baixa Geracao</td><td>Direcionar a parceiros ou condicao comercial para entrega</td><td>Implementado</td></tr>
+        <tr><td>Tipo de empresa</td><td>7 tipos: Nao transformadora, Ferramentaria, Usinagem, Estamparia, Forjaria, Corte e Dobra, Outros</td><td>Implementado</td></tr>
+        <tr><td>Dados da sucata</td><td>Tipo (ferrosa/nao-ferrosa/mista), quantidade, peso, caçamba, frequencia de troca</td><td>Implementado</td></tr>
+        <tr><td>Geolocalizacao</td><td>Latitude/longitude do local com raio para validacao de visita</td><td>Implementado</td></tr>
+        <tr><td>Contatos</td><td>Cadastro de multiplos contatos com cargo, email, telefones, redes sociais</td><td>Implementado</td></tr>
+        <tr><td>Fotos</td><td>Upload de fotos categorizadas (sucata, local, acesso, caçamba, documento)</td><td>Implementado</td></tr>
+        <tr><td>Timeline</td><td>Historico automatico de criacao, atualizacao, mudanca de fase, visitas</td><td>Implementado</td></tr>
+    </tbody>
+</table>
+
+<h2 id="sec4-2">4.2 Modulo de Visitas</h2>
+
+<table>
+    <thead>
+        <tr><th>Funcionalidade</th><th>Descricao</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Agendamento</td><td>Marcar visita com data, duracao, objetivos e responsavel</td><td>Implementado</td></tr>
+        <tr><td>Checklist</td><td>Acesso adequado, EPIs, armazenamento, documentacao, verificacao de sucata</td><td>Implementado</td></tr>
+        <tr><td>GPS / Geolocalizacao</td><td>Captura coordenadas do visitante e calcula distancia do local</td><td>Implementado</td></tr>
+        <tr><td>Validacao de local</td><td>Comparacao com coordenadas cadastradas da oportunidade (raio configuravel)</td><td>Implementado</td></tr>
+        <tr><td>Conclusao</td><td>Registro de resultado, observacoes tecnicas e fotos da visita</td><td>Implementado</td></tr>
+        <tr><td>Cancelamento</td><td>Cancelamento com motivo</td><td>Implementado</td></tr>
+    </tbody>
+</table>
+
+<h2 id="sec4-3">4.3 Modulo de Inteligencia de Mercado</h2>
+
+<table>
+    <thead>
+        <tr><th>Funcionalidade</th><th>Descricao</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Tipos de inteligencia</td><td>Preco da concorrencia, tendencia de mercado, mudanca de fornecedor, variacao de preco, novo competidor</td><td>Implementado</td></tr>
+        <tr><td>Dados registrados</td><td>Nome do competidor, tipo de sucata, preco, regiao, descricao, fonte</td><td>Implementado</td></tr>
+        <tr><td>Filtros</td><td>Por tipo, regiao e periodo</td><td>Implementado</td></tr>
+    </tbody>
+</table>
+
+<h2 id="sec4-4">4.4 Modulo de Relatorios</h2>
+
+<table>
+    <thead>
+        <tr><th>Relatorio</th><th>Descricao</th><th>Permissao</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Pipeline de Oportunidades</td><td>Distribuicao por fase, status e responsavel</td><td>MANAGER+</td></tr>
+        <tr><td>Conversoes</td><td>Negocios fechados por mes, taxa de conversao</td><td>MANAGER+</td></tr>
+        <tr><td>Visitas</td><td>Total, por status, por responsavel</td><td>MANAGER+</td></tr>
+        <tr><td>Exportacao</td><td>Exportar dados para CSV</td><td>MANAGER+</td></tr>
+    </tbody>
+</table>
+
+<h2 id="sec4-5">4.5 Modulo de Usuarios</h2>
+
+<table>
+    <thead>
+        <tr><th>Funcionalidade</th><th>Descricao</th><th>Permissao</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Cadastro</td><td>Registro publico com validacao de senha forte</td><td>Publico</td></tr>
+        <tr><td>Aprovacao</td><td>Admin aprova/rejeita com escolha de perfil</td><td>ADMIN/DIRECTOR</td></tr>
+        <tr><td>Perfil</td><td>7 perfis: Admin, Diretor, Gerente, Coordenador de Inteligencia, Analista, Comprador, Parceiro</td><td>-</td></tr>
+        <tr><td>Status</td><td>Ativo, Inativo, Pendente, Suspenso, Rejeitado</td><td>-</td></tr>
+        <tr><td>Suspensao</td><td>Bloqueio imediato com encerramento de sessoes</td><td>ADMIN</td></tr>
+        <tr><td>Reativacao</td><td>Reativa conta suspensa ou inativa</td><td>ADMIN</td></tr>
+        <tr><td>Troca de senha</td><td>Obrigatoria no primeiro login e a cada 90 dias</td><td>Proprio usuario</td></tr>
+    </tbody>
+</table>
+
+<h2 id="sec4-6">4.6 Modulo de Seguranca</h2>
+
+<table>
+    <thead>
+        <tr><th>Recurso</th><th>Implementacao</th><th>Nivel</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Autenticacao JWT</td><td>Token de acesso (15 min) + refresh token (7 dias)</td><td>Padrao</td></tr>
+        <tr><td>Hash de senha</td><td>bcrypt com 12 rounds de salt</td><td>Fortalecido</td></tr>
+        <tr><td>Rate Limiting</td><td>5 tentativas de login / 30 min de bloqueio</td><td>Fortalecido</td></tr>
+        <tr><td>Helmet.js</td><td>CSP, HSTS, X-Frame, X-XSS, Referrer-Policy</td><td>Fortalecido</td></tr>
+        <tr><td>CORS Restrito</td><td>Apenas origens configuradas</td><td>Padrao</td></tr>
+        <tr><td>RBAC</td><td>Controle por perfil hierarquico</td><td>Fortalecido</td></tr>
+        <tr><td>Aprovacao de usuarios</td><td>Nenhum acesso sem aprovacao do admin</td><td>Fortalecido</td></tr>
+        <tr><td>Auditoria</td><td>Log de todas as acoes com IP, timestamp e dados alterados</td><td>Fortalecido</td></tr>
+        <tr><td>Validacao de inputs</td><td>Zod para validacao de todos os endpoints</td><td>Fortalecido</td></tr>
+        <tr><td>Sanitizacao</td><td>Remocao de tags HTML perigosas</td><td>Padrao</td></tr>
+    </tbody>
+</table>
+
+<!-- ==================== SECAO 5 ==================== -->
+<h1 id="sec5">5. Perfis de Acesso (Roles)</h1>
+
+<table>
+    <thead>
+        <tr><th>Perfil</th><th>Nivel</th><th>Acessos Principais</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>ADMIN</td><td>1 (maximo)</td><td>Todas as telas e funcoes, aprovacao de usuarios, suspensao, auditoria</td></tr>
+        <tr><td>DIRECTOR</td><td>2</td><td>Todas as telas exceto configuracoes criticas do sistema, pode aprovar usuarios</td></tr>
+        <tr><td>MANAGER</td><td>3</td><td>Dashboard, oportunidades, visitas, relatorios gerenciais, inteligencia de mercado</td></tr>
+        <tr><td>INTEL_COORDINATOR</td><td>4</td><td>Dashboard, inteligencia de mercado, oportunidades (consulta), visitas</td></tr>
+        <tr><td>ANALYST</td><td>5</td><td>Dashboard, oportunidades, visitas, relatorios basicos</td></tr>
+        <tr><td>BUYER</td><td>6</td><td>Dashboard, oportunidades, visitas, cadastro de fornecedores</td></tr>
+        <tr><td>PARTNER</td><td>7 (basico)</td><td>Dashboard, oportunidades atribuidas, visitas agendadas</td></tr>
+    </tbody>
+</table>
+
+<h3>Hierarquia de Permissoes</h3>
+<p>Cada perfil herda as permissoes dos perfis abaixo dele na hierarquia. Por exemplo, um MANAGER pode fazer tudo que um ANALISTA, COMPRADOR e PARCEIRO fazem.</p>
+
+<!-- ==================== SECAO 6 ==================== -->
+<h1 id="sec6">6. Fluxos Principais</h1>
+
+<h3>Fluxo 1: Cadastro e Aprovacao de Usuario</h3>
+<div class="code-box">
+Usuario acessa /register
+  -> Preenche dados (nome, email, CPF, telefone, senha forte)
+  -> Sistema cria usuario com status = PENDING
+  -> Admin recebe notificacao (ou visualiza em /admin/user-approval)
+  -> Admin analisa e aprova (escolhendo perfil) ou rejeita (com motivo)
+  -> Se aprovado: status = ACTIVE, usuario recebe notificacao
+  -> Usuario faz login em /login e acessa o sistema
+</div>
+
+<h3>Fluxo 2: Cadastro de Oportunidade</h3>
+<div class="code-box">
+Usuario autenticado acessa /opportunities
+  -> Clica em "Nova Oportunidade"
+  -> Preenche dados basicos (nome, tipo, documento, endereco)
+  -> Sistema cria oportunidade na fase = LEAD
+  -> Usuario pode adicionar contatos, fotos, agendar visita
+  -> Ao avancar fases, sistema registra na timeline
+</div>
+
+<h3>Fluxo 3: Visita com Validacao GPS</h3>
+<div class="code-box">
+Usuario acessa /visits
+  -> Agenda visita para oportunidade (data, objetivos, checklist)
+  -> No dia, visitante vai ao local
+  -> Sistema captura GPS do visitante
+  -> Calcula distancia entre GPS do visitante e GPS cadastrado da oportunidade
+  -> Se dentro do raio configurado: visita validada
+  -> Visitante registra resultado e fotos
+</div>
+
+<!-- ==================== SECAO 7 ==================== -->
+<h1 id="sec7">7. Stack Tecnologico</h1>
+
+<table>
+    <thead>
+        <tr><th>Camada</th><th>Tecnologia</th><th>Funcao</th></tr>
+    </thead>
+    <tbody>
+        <tr><td rowspan="7">Frontend</td><td>React 18</td><td>Framework UI</td></tr>
+        <tr><td>TypeScript</td><td>Tipagem estatica</td></tr>
+        <tr><td>Vite</td><td>Build tool</td></tr>
+        <tr><td>Tailwind CSS</td><td>Estilizacao utilitaria</td></tr>
+        <tr><td>React Query (TanStack)</td><td>Gerenciamento de estado servidor</td></tr>
+        <tr><td>Zustand</td><td>Gerenciamento de estado cliente (auth)</td></tr>
+        <tr><td>React Hook Form</td><td>Formularios com validacao</td></tr>
+        <tr><td rowspan="8">Backend</td><td>Node.js 20</td><td>Runtime</td></tr>
+        <tr><td>Express.js</td><td>Framework web</td></tr>
+        <tr><td>TypeScript</td><td>Tipagem estatica</td></tr>
+        <tr><td>Prisma ORM</td><td>Acesso ao banco de dados</td></tr>
+        <tr><td>PostgreSQL</td><td>Banco de dados relacional</td></tr>
+        <tr><td>Helmet.js</td><td>Headers de seguranca</td></tr>
+        <tr><td>express-rate-limit</td><td>Rate limiting</td></tr>
+        <tr><td>Zod</td><td>Validacao de schemas</td></tr>
+        <tr><td rowspan="3">Infra</td><td>Docker</td><td>Containerizacao</td></tr>
+        <tr><td>Railway</td><td>Plataforma de deploy</td></tr>
+        <tr><td>Nginx</td><td>Servidor web (frontend)</td></tr>
+    </tbody>
+</table>
+
+<!-- ==================== SECAO 8 ==================== -->
+<h1 id="sec8">8. Estrutura de Pastas</h1>
+
+<h3>Backend</h3>
+<div class="code-box">
+crm-portal/backend/
+  prisma/
+    schema.prisma          <- Modelo do banco (tabelas, enums, relacoes)
+    seed.ts                <- Dados iniciais de teste
+  src/
+    middleware/
+      auth.ts              <- Autenticacao JWT, roles, rate limiting
+    routes/
+      auth.ts              <- Login, registro, aprovacao, senha
+      users.ts             <- CRUD de usuarios
+      opportunities.ts     <- CRUD de oportunidades + pipeline
+      contacts.ts          <- CRUD de contatos
+      visits.ts            <- Agendamento, GPS, conclusao
+      photos.ts            <- Upload de fotos
+      activities.ts        <- Timeline
+      marketIntel.ts       <- Inteligencia de mercado
+      dashboard.ts         <- KPIs e metricas
+      reports.ts           <- Relatorios gerenciais
+      notifications.ts     <- Notificacoes
+    utils/
+      auth.ts              <- Hash de senha, geracao de JWT
+    types/
+      index.ts             <- Tipos TypeScript compartilhados
+    server.ts              <- Entry point do Express
+  Dockerfile               <- Container do backend
+  package.json
+  tsconfig.json
+</div>
+
+<h3>Frontend</h3>
+<div class="code-box">
+crm-portal/frontend/
+  src/
+    components/
+      ui/                    <- Button, Card, Input, Badge, Modal
+      Layout.tsx             <- Sidebar + Header + conteudo
+      opportunities/
+        ModalNewOpportunity.tsx
+        TabInfo.tsx
+        TabContacts.tsx
+        TabVisits.tsx
+        TabPhotos.tsx
+        TabTimeline.tsx
+    pages/
+      Login.tsx
+      Register.tsx
+      Dashboard.tsx
+      Opportunities.tsx
+      OpportunityDetail.tsx
+      Visits.tsx
+      MarketIntelligence.tsx
+      Reports.tsx
+      Users.tsx
+      UserApproval.tsx
+      Settings.tsx
+    hooks/
+      useAuth.ts             <- Login, logout, aprovacao
+      useOpportunities.ts
+      useVisits.ts
+      usePhotos.ts
+      useActivities.ts
+      useContacts.ts
+      useDashboard.ts
+    services/
+      api.ts                 <- Instancia Axios com interceptors
+      auth.ts                <- Chamadas API de autenticacao
+      contacts.ts            <- Chamadas API de contatos
+    stores/
+      auth.ts                <- Zustand: estado de autenticacao
+    types/
+      index.ts               <- Tipos TypeScript (User, Opportunity, Visit, etc)
+  public/
+    manifest.json            <- Configuracao PWA
+    sw.js                    <- Service Worker PWA
+  index.html
+  Dockerfile                 <- Container do frontend (nginx)
+  nginx.conf                 <- Configuracao do nginx
+  tailwind.config.js
+  vite.config.ts
+</div>
+
+<!-- ==================== SECAO 9 ==================== -->
+<h1 id="sec9">9. Camadas de Seguranca</h1>
+
+<p>O sistema implementa <strong>10 camadas de seguranca</strong> para proteger dados e acesso:</p>
+
+<table>
+    <thead>
+        <tr><th>Camada</th><th>Implementacao</th><th>Protecao</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>1. HTTPS / SSL</td><td>Fornecido automaticamente pelo Railway</td><td>Transmissao criptografada</td></tr>
+        <tr><td>2. Headers de Seguranca</td><td>Helmet.js com CSP, HSTS, X-Frame, etc.</td><td>Protecao contra XSS, clickjacking</td></tr>
+        <tr><td>3. Rate Limiting</td><td>5 tentativas de login / 100 req. por 15 min</td><td>Protecao contra brute force</td></tr>
+        <tr><td>4. CORS Restrito</td><td>Apenas origens configuradas</td><td>Protecao contra CSRF</td></tr>
+        <tr><td>5. JWT + Refresh</td><td>Token 15 min + refresh 7 dias</td><td>Autenticacao segura com renovacao</td></tr>
+        <tr><td>6. Aprovacao de Usuarios</td><td>Status PENDING ate aprovacao do admin</td><td>Nenhum acesso nao autorizado</td></tr>
+        <tr><td>7. RBAC</td><td>7 perfis hierarquicos</td><td>Acesso baseado em perfil</td></tr>
+        <tr><td>8. Validacao Zod</td><td>Todos os endpoints validam inputs</td><td>Protecao contra dados invalidos</td></tr>
+        <tr><td>9. Sanitizacao</td><td>Remocao de HTML perigoso dos inputs</td><td>Protecao contra XSS</td></tr>
+        <tr><td>10. Auditoria</td><td>Log de todas as acoes com IP e timestamp</td><td>Rastreabilidade completa</td></tr>
+    </tbody>
+</table>
+
+<!-- ==================== SECAO 10 ==================== -->
+<h1 id="sec10">10. Configuracoes para Deploy</h1>
+
+<h3>Variaveis de Ambiente Obrigatorias</h3>
+<table>
+    <thead>
+        <tr><th>Variavel</th><th>Valor</th><th>Onde Configurar</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>DATABASE_URL</td><td>postgresql://... (Railway fornece)</td><td>Railway Variables</td></tr>
+        <tr><td>JWT_SECRET</td><td>Chave aleatoria de 64+ caracteres</td><td>Railway Variables</td></tr>
+        <tr><td>NODE_ENV</td><td>production</td><td>Railway Variables</td></tr>
+        <tr><td>FRONTEND_URL</td><td>URL do frontend no Railway</td><td>Railway Variables</td></tr>
+        <tr><td>GPS_VALIDATION_ENABLED</td><td>true</td><td>Railway Variables</td></tr>
+    </tbody>
+</table>
+
+<h3>Gerar JWT_SECRET</h3>
+<div class="code-box">
+# Linux / Mac
+openssl rand -base64 64
+
+# Ou use um gerador online seguro
+# Exemplo: x7K9mP2vL4nQ8wR5tY6uI3oZ1aS9dF7gH2jK5lP8mN4bV6cX9zA2qW5eR8tY7uI4oP1aS6dF9gH3jK6lP9mN5bV7cX0zA3qW6eR9tY8uI5oP2aS7dF0gH4jK7lP0mN6bV8cX1z
+</div>
+
+<h3>Servicos no Railway</h3>
+<ol>
+    <li><strong>PostgreSQL</strong> - Banco de dados (ja adicionado)</li>
+    <li><strong>Backend</strong> - Node.js com Dockerfile (adicionar manualmente)</li>
+    <li><strong>Frontend</strong> - Nginx com Dockerfile (adicionar manualmente)</li>
+</ol>
+
+<h3>Primeiro Usuario Admin</h3>
+<p>Como o sistema exige aprovacao, e necessario criar o primeiro admin diretamente no banco:</p>
+<div class="code-box">
+-- SQL para criar primeiro admin
+INSERT INTO "users" ("id", "email", "password", "name", "role", "status", "firstLogin", "createdAt", "updatedAt")
+VALUES (
+  gen_random_uuid(),
+  'admin@sucata.com',
+  '$2a$12$...',  -- bcrypt hash da senha
+  'Administrador',
+  'ADMIN',
+  'ACTIVE',
+  false,
+  NOW(),
+  NOW()
+);
+</div>
+
+<div class="success-box">
+    <strong>Status do Sistema:</strong> Todas as 11 telas estao implementadas. Todos os 16 erros de programacao foram corrigidos. O sistema esta pronto para deploy no Railway.
+</div>
+
+</body>
+</html>

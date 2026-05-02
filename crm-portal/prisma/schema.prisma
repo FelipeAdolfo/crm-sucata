@@ -1,0 +1,703 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USUÁRIOS E AUTENTICAÇÃO
+// ============================================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String    // Hash bcrypt com salt
+  name          String
+  cpf           String?   @unique
+  phone         String?
+  role          UserRole  @default(PARTNER)
+  status        UserStatus @default(PENDING)  // PENDENTE até aprovação!
+  
+  // Aprovação
+  approvedBy    String?   // ID do admin que aprovou
+  approvedAt    DateTime? // Quando foi aprovado
+  rejectionReason String? // Motivo se foi rejeitado
+  
+  // 2FA
+  twoFactorSecret String?
+  twoFactorEnabled Boolean @default(false)
+  
+  // Primeiro acesso
+  firstLogin    Boolean   @default(true)
+  passwordChangedAt DateTime?
+  
+  // Segurança - Proteção contra brute force
+  failedLoginAttempts Int @default(0)
+  lockedUntil   DateTime?  // Bloqueio temporário
+  lastLoginIp   String?    // IP do último login
+  
+  // Notificações
+  notificationSettings Json?    // Preferências de notificação (JSON)
+  
+  // Dispositivo móvel conectado (app Android de chamadas)
+  deviceId          String?   // ID único do dispositivo
+  deviceModel       String?   // Modelo do celular (ex: Samsung Galaxy S23)
+  deviceOsVersion   String?   // Versão do Android
+  deviceAppVersion  String?   // Versão do app instalado
+  deviceLinkedAt    DateTime? // Quando o dispositivo foi vinculado
+  deviceLinkedBy    String?   // Quem vinculou (admin ou próprio usuário)
+  deviceStatus      DeviceLinkStatus @default(UNLINKED)
+  
+  // Redes sociais
+  linkedinUrl       String?
+  facebookUrl       String?
+  instagramUrl      String?
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+  
+  // Relacionamentos
+  opportunities Opportunity[] @relation("AssignedTo")
+  activities    Activity[]
+  visits        Visit[]
+  marketIntel   MarketIntelligence[]
+  notifications Notification[]
+  refreshTokens RefreshToken[]  // Tokens de refresh
+  auditLogs     AuditLog[]      // Logs de auditoria
+  sessions      UserSession[]   // Sessões ativas
+  documents     Document[]      // Documentos enviados
+
+  @@map("users")
+}
+
+enum UserRole {
+  PARTNER          // Sucateiro Parceiro
+  BUYER            // Comprador
+  ANALYST          // Analista
+  MANAGER          // Gerente
+  DIRECTOR         // Diretor
+  INTEL_COORDINATOR // Coordenador de Inteligência
+  ADMIN            // Administrador do sistema
+}
+
+enum UserStatus {
+  ACTIVE           // Aprovado e ativo
+  INACTIVE         // Inativo
+  PENDING          // Aguardando aprovação do admin
+  SUSPENDED        // Suspenso
+  REJECTED         // Cadastro rejeitado
+}
+
+enum DeviceLinkStatus {
+  UNLINKED         // Nenhum dispositivo vinculado
+  PENDING          // Aguardando confirmação de vinculação
+  LINKED           // Dispositivo vinculado e ativo
+  REVOKED          // Vinculação revogada
+}
+
+// Tokens de Refresh (segurança adicional)
+model RefreshToken {
+  id          String    @id @default(uuid())
+  token       String    @unique  // Hash do token
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime  // Data de expiração
+  createdAt   DateTime  @default(now())
+  revokedAt   DateTime? // Se foi revogado
+  revokedBy   String?   // Quem revogou
+  ipAddress   String?   // IP que criou
+  userAgent   String?   // Navegador/dispositivo
+  
+  @@map("refresh_tokens")
+  @@index([userId])
+  @@index([token])
+}
+
+// Sessões ativas do usuário
+model UserSession {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token       String    @unique
+  ipAddress   String
+  userAgent   String
+  location    String?   // Localização aproximada
+  createdAt   DateTime  @default(now())
+  lastActivityAt DateTime @default(now())
+  expiresAt   DateTime
+  isValid     Boolean   @default(true)
+  
+  @@map("user_sessions")
+  @@index([userId])
+  @@index([token])
+}
+
+// Logs de Auditoria (tudo que acontece no sistema)
+model AuditLog {
+  id          String    @id @default(uuid())
+  userId      String?   // Pode ser nulo para ações do sistema
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  action      AuditAction
+  entityType  String    // opportunity, user, visit, etc.
+  entityId    String?   // ID do registro afetado
+  
+  // Dados
+  oldValues   Json?     // Valores antigos
+  newValues   Json?     // Valores novos
+  description String
+  
+  // Contexto
+  ipAddress   String
+  userAgent   String
+  timestamp   DateTime  @default(now())
+  
+  // Risco
+  riskLevel   RiskLevel @default(LOW)
+  
+  @@map("audit_logs")
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([timestamp])
+  @@index([action])
+}
+
+enum AuditAction {
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+  PASSWORD_CHANGED
+  USER_CREATED
+  USER_UPDATED
+  USER_APPROVED
+  USER_REJECTED
+  USER_SUSPENDED
+  USER_ACTIVATED
+  OPPORTUNITY_CREATED
+  OPPORTUNITY_UPDATED
+  OPPORTUNITY_DELETED
+  OPPORTUNITY_ASSIGNED
+  STAGE_CHANGED
+  VISIT_CREATED
+  VISIT_COMPLETED
+  PHOTO_UPLOADED
+  DATA_EXPORTED
+  SETTINGS_CHANGED
+  PERMISSION_CHANGED
+  SESSION_REVOKED
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// ============================================
+// OPORTUNIDADES (FORNECEDORES DE SUCATA)
+// ============================================
+
+model Opportunity {
+  id                String            @id @default(uuid())
+  
+  // Dados básicos
+  name              String
+  type              OpportunityType
+  documentType      DocumentType      // PF ou PJ
+  documentNumber    String            @unique // CPF ou CNPJ
+  razaoSocial       String?           // Razão social (nome completo da empresa)
+  
+  // Endereço
+  address           String?
+  city              String?
+  state             String?
+  zipCode           String?
+  
+  // Datas de acompanhamento
+  leadDate          DateTime?         // Data de entrada como lead
+  lastContactDate   DateTime?         // Data do último contato
+  expectedCloseDate DateTime?         // Data prevista de fechamento/perda
+  
+  // Classificação automática
+  classification    String?           // FORA_DE_PERFIL, BAIXA_GERACAO, etc.
+  
+  // Contato principal
+  phone             String?
+  email             String?
+  website           String?           // Site da empresa (para Fonte)
+  
+  // Responsável direto (preenchido no cadastro inicial)
+  responsibleName  String?           // Nome do responsável
+  responsibleRole  String?           // Cargo do responsável
+  responsiblePhone String?           // Celular do responsável
+  
+  // Observações gerais
+  observations      String?           // Anotações sobre a oportunidade
+  
+  // Fase atual
+  stage             OpportunityStage  @default(LEAD)
+  previousStage     OpportunityStage?
+  
+  // Subclassificação Baixa Geração
+  lowGenType        LowGenType?
+  
+  // Responsável
+  assignedTo        String
+  assignedUser      User              @relation("AssignedTo", fields: [assignedTo], references: [id])
+  
+  // Origem
+  source            String?           // Indicação, prospecção, etc.
+  
+  // Tipo de empresa
+  companyType       CompanyType?
+  
+  // Dados da sucata (preenchido na fase Contato)
+  scrapType         ScrapType?
+  quantityGenerated Float?            // em kg
+  containerWeight   Float?            // peso médio em kg
+  containerType     ContainerType?
+  exchangeFrequency ExchangeFrequency?
+  currentBuyer      String?           // Para quem está vendendo
+  
+  // Geolocalização do local
+  latitude          Float?
+  longitude         Float?
+  geofenceRadius    Int?              // Raio em metros para validação de visita
+  
+  // Concorrência
+  competitorPrice   Float?
+  competitorName    String?
+  
+  // Negociação
+  proposedPrice     Float?
+  negotiatedVolume  Float?
+  paymentTerms      String?
+  collectionFrequency String?
+  
+  // Status
+  status            OpportunityStatus @default(ACTIVE)
+  
+  // Timestamps
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  convertedAt       DateTime?         // Quando virou negócio
+  
+  // Relacionamentos
+  contacts          Contact[]
+  photos            Photo[]
+  visits            Visit[]
+  activities        Activity[]
+  marketIntel       MarketIntelligence[]
+  documents         Document[]
+
+  @@map("opportunities")
+}
+
+enum OpportunityType {
+  LEILAO_LOTE_SPOT        // Leilão Lote Spot
+  LEILAO_GERACAO_CONTINUA // Leilão Geração Contínua
+  FONTE                   // Fonte Geradora (Indústria)
+  SUCATEIRO               // Sucateiro Parceiro
+  LOTE_SPOT               // Lote Spot/Pontual
+}
+
+enum DocumentType {
+  PF  // Pessoa Física - CPF
+  PJ  // Pessoa Jurídica - CNPJ
+}
+
+enum OpportunityStage {
+  PRIMEIRO_CONTATO    // Primeiro Contato
+  SEGUNDO_CONTATO     // Segundo Contato
+  VISITA              // Visita
+  EM_NEGOCIACAO       // Em Negociação
+  CONTRA_PROPOSTA     // Contra Proposta
+  EM_FECHAMENTO       // Em Fechamento
+  CONCLUIDA_SUCESSO   // Concluídas com Sucesso
+  FORA_DE_PERFIL      // Fora de Perfil
+  BAIXA_GERACAO_DIR   // Baixa Geração Direcionar
+  BAIXA_GERACAO_ENT   // Baixa Geração Entrega
+  LEAD                // Lead (legado)
+  CONTACT             // Contato (legado)
+  VISIT_SCHEDULED      // Visita Agendada (legado)
+  IN_NEGOTIATION       // Em Negociação (legado)
+  CLOSED_DEAL          // Negócio Fechado (legado)
+  COMMERCIAL_RELATION  // Relação Comercial (legado)
+}
+
+enum LowGenType {
+  DIRECT    // Direcionar a parceiros
+  DELIVERY  // Condição comercial para entrega
+}
+
+enum ScrapType {
+  FERROUS      // Sucata Ferrosa
+  NON_FERROUS  // Sucata Não-Ferrosa
+  MIXED        // Sucata Mista
+}
+
+enum ContainerType {
+  DRUM         // Tambor
+  BIG_BAG      // Big Bag
+  SKIP_BIN     // Caçamba
+  CONTAINER    // Container
+}
+
+enum CompanyType {
+  NON_TRANSFORMER    // Não transformadora de aço
+  TOOL_SHOP          // Ferramentaria
+  MACHINING          // Usinagem
+  STAMPING           // Estamparia
+  FORGING            // Forjaria
+  CUTTING_BENDING    // Corte e dobra/Plasma
+  OTHER              // Outros
+}
+
+enum ExchangeFrequency {
+  DAILY        // Diária
+  WEEKLY       // Semanal
+  BIWEEKLY     // Quinzenal
+  MONTHLY      // Mensal
+  BIMONTHLY    // Bimestral
+  QUARTERLY    // Trimestral
+  SPORADIC     // Esporádica
+}
+
+enum OpportunityStatus {
+  ACTIVE
+  INACTIVE
+  CONVERTED
+  LOST
+}
+
+// ============================================
+// CONTATOS (Pessoas de contato da oportunidade)
+// ============================================
+
+model Contact {
+  id                String    @id @default(uuid())
+  
+  opportunityId     String
+  opportunity       Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  
+  name              String
+  role              String?   // Cargo
+  email             String?
+  phoneMobile       String?
+  phoneLandline     String?
+  extension         String?
+  
+  // Redes sociais
+  linkedinUrl       String?
+  facebookUrl       String?
+  instagramUrl      String?
+  
+  isMainContact     Boolean   @default(false)
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@map("contacts")
+}
+
+// ============================================
+// FOTOS
+// ============================================
+
+model Photo {
+  id                String    @id @default(uuid())
+  
+  opportunityId     String
+  opportunity       Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  
+  url               String
+  thumbnailUrl      String?
+  category          PhotoCategory
+  description       String?
+  
+  uploadedBy        String
+  uploadedAt        DateTime  @default(now())
+  
+  @@map("photos")
+}
+
+enum PhotoCategory {
+  SCRAP         // Foto da sucata
+  LOCATION      // Foto do local
+  ACCESS        // Foto do acesso
+  CONTAINER     // Foto da caçamba
+  DOCUMENT      // Documento
+  OTHER         // Outro
+}
+
+// ============================================
+// VISITAS
+// ============================================
+
+model Visit {
+  id                String        @id @default(uuid())
+  
+  opportunityId     String
+  opportunity       Opportunity   @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  
+  scheduledAt       DateTime
+  duration          Int?          // Duração estimada em minutos
+  
+  visitorId         String
+  visitor           User          @relation(fields: [visitorId], references: [id])
+  
+  objectives        String?       // Objetivos da visita
+  
+  // Checklist
+  checklist         VisitChecklist?
+  
+  // Resultado
+  status            VisitStatus   @default(SCHEDULED)
+  result            String?       // Resultado da visita
+  observations      String?       // Observações técnicas
+  
+  // Fotos da visita
+  photos            VisitPhoto[]
+  
+  // Geolocalização da visita (GPS do visitante)
+  visitorLatitude   Float?        // Latitude do visitante
+  visitorLongitude  Float?        // Longitude do visitante
+  locationVerified  Boolean       @default(false)  // Localização validada?
+  verifiedAt        DateTime?     // Quando foi validada
+  locationDistance  Float?        // Distância em metros do local
+  
+  // Timestamps
+  createdAt         DateTime      @default(now())
+  completedAt       DateTime?
+  
+  @@map("visits")
+}
+
+model VisitChecklist {
+  id                String    @id @default(uuid())
+  
+  visitId           String    @unique
+  visit             Visit     @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  
+  // Itens de segurança
+  hasProperAccess   Boolean?
+  hasSafetyEquipment Boolean?
+  hasProperStorage  Boolean?
+  hasDocumentation  Boolean?
+  
+  // Itens técnicos
+  scrapVerified     Boolean?
+  quantityVerified  Boolean?
+  qualityVerified   Boolean?
+  
+  notes             String?
+  
+  @@map("visit_checklists")
+}
+
+model VisitPhoto {
+  id                String    @id @default(uuid())
+  
+  visitId           String
+  visit             Visit     @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  
+  url               String
+  category          PhotoCategory
+  description       String?
+  
+  @@map("visit_photos")
+}
+
+enum VisitStatus {
+  SCHEDULED     // Agendada
+  CONFIRMED     // Confirmada
+  IN_PROGRESS   // Em andamento
+  COMPLETED     // Concluída
+  CANCELLED     // Cancelada
+  RESCHEDULED   // Reagendada
+}
+
+// ============================================
+// ATIVIDADES (Timeline)
+// ============================================
+
+model Activity {
+  id                String          @id @default(uuid())
+  
+  opportunityId     String
+  opportunity       Opportunity     @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  
+  userId            String
+  user              User            @relation(fields: [userId], references: [id])
+  
+  type              ActivityType
+  description       String
+  
+  // Dados adicionais
+  oldStage          OpportunityStage?
+  newStage          OpportunityStage?
+  metadata          Json?           // Dados extras em JSON
+  
+  createdAt         DateTime        @default(now())
+  
+  @@map("activities")
+}
+
+enum ActivityType {
+  CREATED           // Oportunidade criada
+  UPDATED           // Dados atualizados
+  STAGE_CHANGED     // Mudança de fase
+  CONTACT_ADDED     // Contato adicionado
+  PHOTO_UPLOADED    // Foto adicionada
+  VISIT_SCHEDULED   // Visita agendada
+  VISIT_COMPLETED   // Visita concluída
+  NOTE_ADDED        // Nota adicionada
+  NEGOTIATION       // Negociação
+  CONVERTED         // Convertido em negócio
+  LOST              // Oportunidade perdida
+  CALL              // Chamada realizada (curta)
+  CALL_COMPLETED    // Chamada completada (longa)
+  CALL_MISSED       // Chamada perdida
+  DOCUMENT_UPLOADED // Documento enviado
+  DOCUMENT_SIGNED   // Documento assinado
+}
+
+// ============================================
+// INTELIGÊNCIA DE MERCADO
+// ============================================
+
+model MarketIntelligence {
+  id                String    @id @default(uuid())
+  
+  // Quem registrou
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  
+  // Sobre quem (opcional)
+  opportunityId     String?
+  opportunity       Opportunity? @relation(fields: [opportunityId], references: [id])
+  
+  // Tipo de inteligência
+  type              IntelType
+  
+  // Dados
+  competitorName    String?
+  scrapType         ScrapType?
+  price             Float?
+  region            String?
+  
+  // Informações
+  description       String
+  source            String?   // Fonte da informação
+  
+  // Data da informação
+  intelDate         DateTime  @default(now())
+  
+  createdAt         DateTime  @default(now())
+  
+  @@map("market_intelligence")
+}
+
+enum IntelType {
+  COMPETITOR_PRICE    // Preço da concorrência
+  MARKET_TREND        // Tendência de mercado
+  SUPPLIER_CHANGE     // Mudança de fornecedor
+  PRICE_VARIATION     // Variação de preço
+  NEW_COMPETITOR      // Novo competidor
+  OTHER               // Outro
+}
+
+// ============================================
+// NOTIFICAÇÕES
+// ============================================
+
+model Notification {
+  id                String    @id @default(uuid())
+  
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  
+  type              NotificationType
+  title             String
+  message           String
+  
+  // Link para ação
+  entityType        String?   // opportunity, visit, etc.
+  entityId          String?
+  
+  // Status
+  isRead            Boolean   @default(false)
+  readAt            DateTime?
+  
+  createdAt         DateTime  @default(now())
+  
+  @@map("notifications")
+}
+
+enum NotificationType {
+  VISIT_REMINDER      // Lembrete de visita
+  STAGE_CHANGE        // Mudança de fase
+  NEW_OPPORTUNITY     // Nova oportunidade atribuída
+  APPROVAL_NEEDED     // Aprovação necessária
+  MARKET_ALERT        // Alerta de mercado
+  SYSTEM              // Notificação do sistema
+  USER_APPROVED       // Usuário aprovado
+  USER_REJECTED       // Usuário rejeitado
+}
+
+// ============================================
+// CONFIGURAÇÕES DO SISTEMA
+// ============================================
+
+model SystemConfig {
+  id                String    @id @default(uuid())
+  key               String    @unique
+  value             String
+  description       String?
+  
+  updatedAt         DateTime  @updatedAt
+  updatedBy         String?
+  
+  @@map("system_configs")
+}
+
+// ============================================
+// DOCUMENTOS
+// ============================================
+
+model Document {
+  id            String          @id @default(cuid())
+  title         String          // Titulo do documento
+  type          String          // DECLARACAO, CONTRATO, NDA, CERTIDAO, OUTRO
+  fileName      String          // Nome original do arquivo
+  fileUrl       String          // Caminho do arquivo no servidor
+  fileSize      Int             // Tamanho em bytes
+  mimeType      String          // Tipo MIME
+  status        DocumentStatus  @default(PENDING)
+  signatureData String?         // SVG da assinatura
+  signedAt      DateTime?       // Quando foi assinado
+  signedBy      String?         // Quem assinou
+  opportunityId String?         // Vinculado a uma oportunidade (opcional)
+  uploadedById  String          // Quem enviou
+
+  // Relations
+  opportunity   Opportunity?    @relation(fields: [opportunityId], references: [id])
+  uploadedBy    User            @relation(fields: [uploadedById], references: [id])
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@map("documents")
+}
+
+enum DocumentStatus {
+  PENDING   // Pendente de assinatura
+  SIGNED    // Assinado
+  ARCHIVED  // Arquivado
+}

@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>CRM Sucata - Telas, Fluxos e Acoes do Sistema</title>
+<style>
+/* ====== BASE ====== */
+@page {
+  size: A4;
+  margin: 2.2cm 2cm 2.2cm 2cm;
+}
+
+body {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 11pt;
+  line-height: 1.55;
+  color: #222;
+  margin: 0;
+  padding: 0;
+}
+
+/* ====== COVER ====== */
+.cover {
+  page-break-after: always;
+  width: 210mm;
+  height: 297mm;
+  position: relative;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+  overflow: hidden;
+}
+.cover-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+  width: 80%;
+}
+.cover-title { font-size: 36pt; font-weight: 700; margin-bottom: 0.4cm; }
+.cover-sub { font-size: 14pt; font-weight: 400; opacity: 0.9; margin-bottom: 2cm; }
+.cover-meta { font-size: 11pt; opacity: 0.75; line-height: 2; }
+
+/* ====== TOC ====== */
+.toc-wrap { margin-bottom: 1cm; }
+.toc-title {
+  font-size: 20pt; font-weight: 700; color: #1a1a2e;
+  border-bottom: 3px solid #0f3460;
+  padding-bottom: 0.25cm; margin-bottom: 0.6cm;
+}
+.toc-list { list-style: none; padding: 0; margin: 0; }
+.toc-list li { margin: 0.25cm 0; }
+.toc-h1 { font-size: 12pt; font-weight: 700; color: #0f3460; }
+.toc-h2 { font-size: 11pt; font-weight: 600; color: #333; padding-left: 0.7cm; }
+.toc-h3 { font-size: 10pt; color: #555; padding-left: 1.4cm; }
+
+/* ====== HEADINGS ====== */
+h1 {
+  font-size: 20pt; font-weight: 700; color: #1a1a2e;
+  margin-top: 0.6cm; margin-bottom: 0.5cm;
+  page-break-after: avoid;
+}
+
+h2 {
+  font-size: 15pt; font-weight: 700; color: #0f3460;
+  margin-top: 0.7cm; margin-bottom: 0.35cm;
+  page-break-after: avoid;
+  border-left: 4px solid #0f3460; padding-left: 0.3cm;
+}
+h3 {
+  font-size: 13pt; font-weight: 700; color: #1a1a2e;
+  margin-top: 0.5cm; margin-bottom: 0.25cm;
+  page-break-after: avoid;
+}
+h4 {
+  font-size: 11.5pt; font-weight: 700; color: #444;
+  margin-top: 0.3cm; margin-bottom: 0.15cm;
+  page-break-after: avoid;
+}
+
+/* ====== TABLES ====== */
+table {
+  width: 100%; border-collapse: collapse;
+  margin: 0.3cm 0; font-size: 10pt;
+  page-break-inside: avoid;
+}
+thead tr { border-top: 2px solid #333; border-bottom: 1.5px solid #333; }
+tbody tr { border-bottom: 0.5px solid #ccc; }
+tbody tr:last-child { border-bottom: 2px solid #333; }
+th, td { padding: 0.2cm 0.3cm; text-align: left; vertical-align: top; }
+th { font-weight: 700; background: #f0f0f0; }
+thead { display: table-header-group; }
+tr { page-break-inside: avoid; }
+
+/* ====== BOXES ====== */
+.box {
+  border: 1px solid #bbb; border-radius: 5px;
+  padding: 0.4cm; margin: 0.3cm 0;
+  background: #fafafa;
+  page-break-inside: avoid;
+}
+.box-title { font-weight: 700; font-size: 11pt; color: #0f3460; margin-bottom: 0.15cm; }
+
+/* ====== SCREEN HEADER ====== */
+.screen-header {
+  background: linear-gradient(90deg, #0f3460, #1a4a7a);
+  color: white; padding: 0.3cm 0.4cm;
+  border-radius: 5px 5px 0 0;
+  font-weight: 700; font-size: 11.5pt;
+  margin-top: 0.4cm;
+  page-break-inside: avoid;
+}
+.screen-body {
+  border: 1px solid #bbb; border-top: none;
+  padding: 0.4cm; border-radius: 0 0 5px 5px;
+  page-break-inside: avoid;
+  margin-bottom: 0.4cm;
+}
+
+/* ====== FLOW ARROW ====== */
+.flow { text-align: center; font-size: 14pt; color: #0f3460; margin: 0.1cm 0; }
+
+/* ====== LISTS & PARAS ====== */
+ul, ol { margin: 0.15cm 0; padding-left: 0.9cm; }
+li { margin: 0.08cm 0; }
+p { margin: 0.2cm 0; text-align: justify; }
+
+/* ====== CODE ====== */
+code {
+  font-family: 'Courier New', monospace; font-size: 9.5pt;
+  background: #f0f0f0; padding: 0.05cm 0.12cm; border-radius: 3px;
+}
+
+/* ====== BUTTON ROWS ====== */
+.btn-row { margin: 0.1cm 0; }
+.btn-name { font-weight: 700; color: #0f3460; }
+.btn-desc { color: #444; }
+.btn-cmd {
+  font-family: 'Courier New', monospace; font-size: 9pt;
+  color: #666; display: block; margin-top: 0.05cm;
+}
+
+/* ====== COLORS ====== */
+.c-blue { color: #0f3460; }
+.c-green { color: #10b981; }
+.c-red { color: #ef4444; }
+.c-yellow { color: #f59e0b; }
+.c-purple { color: #8b5cf6; }
+
+/* ====== SEPARATOR ====== */
+.sep { border-top: 1px solid #ddd; margin: 0.4cm 0; }
+
+/* ====== NOTE ====== */
+.note { font-size: 9.5pt; color: #555; font-style: italic; margin-top: 0.15cm; }
+
+/* ====== PREVENT ORPHANS/WIDOWS ====== */
+p, li { orphans: 2; widows: 2; }
+</style>
+</head>
+<body>
+
+<!-- ==================== CAPA ==================== -->
+<div class="cover">
+  <div class="cover-inner">
+    <div class="cover-title">CRM Sucata</div>
+    <div class="cover-sub">Telas, Fluxos e Acoes do Sistema</div>
+    <div class="cover-meta">
+      <p>Sequencia Completa de Telas</p>
+      <p>Botoes: Sair - Voltar - Cancelar - Salvar</p>
+      <p style="margin-top:2cm">26 de Abril de 2026</p>
+      <p>Versao 1.0</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== INDICE ==================== -->
+<div class="toc-wrap">
+  <div class="toc-title">Indice</div>
+  <ul class="toc-list">
+    <li class="toc-h1">1. Sequencia de Uso do Sistema</li>
+    <li class="toc-h2">1.1 Fluxo Principal (Usuario Comum)</li>
+    <li class="toc-h2">1.2 Fluxo do Administrador</li>
+    <li class="toc-h1">2. Telas Publicas (Sem Autenticacao)</li>
+    <li class="toc-h2">2.1 Tela de Login</li>
+    <li class="toc-h2">2.2 Tela de Registro</li>
+    <li class="toc-h2">2.3 Tela de Cadastro Pendente</li>
+    <li class="toc-h1">3. Painel Principal (Dashboard)</li>
+    <li class="toc-h1">4. Modulo de Oportunidades</li>
+    <li class="toc-h2">4.1 Lista de Oportunidades</li>
+    <li class="toc-h2">4.2 Modal: Nova Oportunidade</li>
+    <li class="toc-h2">4.3 Detalhe da Oportunidade</li>
+    <li class="toc-h3">4.3.1 Aba: Informacoes</li>
+    <li class="toc-h3">4.3.2 Aba: Contatos</li>
+    <li class="toc-h3">4.3.3 Aba: Visitas</li>
+    <li class="toc-h3">4.3.4 Aba: Fotos</li>
+    <li class="toc-h3">4.3.5 Aba: Timeline</li>
+    <li class="toc-h1">5. Modulo de Visitas</li>
+    <li class="toc-h2">5.1 Lista de Visitas</li>
+    <li class="toc-h2">5.2 Modal: Nova Visita</li>
+    <li class="toc-h2">5.3 Modal: Concluir Visita (GPS)</li>
+    <li class="toc-h1">6. Modulo de Inteligencia de Mercado</li>
+    <li class="toc-h1">7. Modulo de Relatorios</li>
+    <li class="toc-h1">8. Modulo de Usuarios</li>
+    <li class="toc-h2">8.1 Lista de Usuarios</li>
+    <li class="toc-h2">8.2 Modal: Editar Usuario</li>
+    <li class="toc-h1">9. Aprovacao de Usuarios (Admin)</li>
+    <li class="toc-h1">10. Configuracoes do Sistema</li>
+    <li class="toc-h2">10.1 Aba: Perfil</li>
+    <li class="toc-h2">10.2 Aba: Seguranca</li>
+    <li class="toc-h2">10.3 Aba: Notificacoes</li>
+    <li class="toc-h1">11. Layout Global (Sidebar e Header)</li>
+    <li class="toc-h1">12. Resumo de Todos os Botoes</li>
+  </ul>
+</div>
+
+<!-- ==================== SECAO 1 ==================== -->
+<h1>1. Sequencia de Uso do Sistema</h1>
+
+<p>O CRM Sucata foi projetado para guiar o usuario por uma <strong>sequencia logica de telas</strong>, desde o primeiro acesso ate as operacoes diarias de gestao. Abaixo estao os dois fluxos principais: o do <strong>usuario comum</strong> (sucateiro, comprador, analista) e o do <strong>administrador</strong>.</p>
+
+<h2>1.1 Fluxo Principal - Usuario Comum</h2>
+
+<div class="box">
+<div class="box-title">Passo a Passo</div>
+<p><strong>Tela 1: Registro</strong> - Usuario preenche nome, e-mail, CPF, telefone e senha forte.</p>
+<div class="flow">▼</div>
+<p><strong>Tela 2: Cadastro Pendente</strong> - Sistema informa: "Aguardando aprovacao do administrador."</p>
+<div class="flow">▼</div>
+<p><strong>(Admin aprova em outro fluxo)</strong></p>
+<div class="flow">▼</div>
+<p><strong>Tela 3: Login</strong> - Usuario insere e-mail e senha validos.</p>
+<div class="flow">▼</div>
+<p><strong>Tela 4: Dashboard</strong> - Painel com KPIs, ranking e alertas. Acesso a todos os modulos via sidebar.</p>
+<div class="flow">▼</div>
+<p><strong>Modulos disponiveis:</strong></p>
+<ul>
+<li><strong>Oportunidades</strong> - Cadastrar novos fornecedores, acompanhar funil de vendas.</li>
+<li><strong>Visitas</strong> - Agendar, confirmar, concluir com validacao GPS.</li>
+<li><strong>Inteligencia de Mercado</strong> - Registrar precos da concorrencia e tendencias.</li>
+<li><strong>Relatorios</strong> - Visualizar pipeline, taxas de conversao (se gerente+).</li>
+<li><strong>Configuracoes</strong> - Alterar perfil, senha e preferencias.</li>
+</ul>
+<div class="flow">▼</div>
+<p><strong>Em qualquer momento:</strong> Botao <strong>Sair</strong> na sidebar encerra a sessao e retorna ao Login.</p>
+</div>
+
+<h2>1.2 Fluxo do Administrador</h2>
+
+<div class="box">
+<div class="box-title">Passo a Passo do Admin</div>
+<p><strong>Tela 1: Login</strong> - Admin acessa com credenciais.</p>
+<div class="flow">▼</div>
+<p><strong>Tela 2: Dashboard</strong> - Mesmo painel, mas com acesso aos modulos administrativos.</p>
+<div class="flow">▼</div>
+<p><strong>Tela 3: Aprovacao de Usuarios</strong> - Visualiza lista de cadastros pendentes. Cada linha tem botoes <strong>Aprovar</strong> (com escolha de perfil) e <strong>Rejeitar</strong> (com motivo).</p>
+<div class="flow">▼</div>
+<p><strong>Tela 4: Usuarios</strong> - Gestao completa: editar, suspender, reativar, alterar perfil, resetar senha.</p>
+<div class="flow">▼</div>
+<p><strong>Tela 5: Configuracoes</strong> - Admin tambem pode alterar suas proprias configuracoes.</p>
+</div>
+
+<!-- ==================== SECAO 2 ==================== -->
+<h1>2. Telas Publicas (Sem Autenticacao)</h1>
+
+<p>Estas sao as unicas telas acessiveis sem login. Servem de porta de entrada para novos usuarios.</p>
+
+<h2>2.1 Tela de Login - /login</h2>
+
+<div class="screen-header">Tela: Login</div>
+<div class="screen-body">
+<h4>Descricao</h4>
+<p>Tela inicial do sistema. Fundo em gradiente azul escuro (#1a1a2e ate #0f3460). Card central branco com sombra. Logo "S" em quadrado arredondado. Campos de e-mail e senha com icones a esquerda.</p>
+
+<h4>Botoes e Acoes</h4>
+<table>
+<thead><tr><th>Botao</th><th>Texto na Tela</th><th>Acao</th><th>Comando / Funcao</th></tr></thead>
+<tbody>
+<tr><td>Primario</td><td>"Entrar"</td><td>Autenticar usuario</td><td>Chama <code>authService.login(email, password)</code>. Valida JWT. Se sucesso, redireciona para <code>/dashboard</code>.</td></tr>
+<tr><td>Link</td><td>"Cadastre-se"</td><td>Ir para registro</td><td>Navega para <code>/register</code>.</td></tr>
+<tr><td>Link</td><td>"Esqueci a senha"</td><td>Recuperacao</td><td>Abre fluxo de reset de senha (futuro).</td></tr>
+</tbody>
+</table>
+
+<h4>Mensagens de Erro</h4>
+<ul>
+<li><strong class="c-yellow">"Cadastro aguardando aprovacao"</strong> - Status = PENDENTE. Botao "Voltar ao Login".</li>
+<li><strong class="c-red">"Cadastro rejeitado"</strong> - Status = REJEITADO. Orienta contato com admin.</li>
+<li><strong class="c-red">"Conta suspensa"</strong> - Status = SUSPENSO. Orienta contato com admin.</li>
+<li><strong class="c-red">"Conta bloqueada por 30 min"</strong> - 5 tentativas falhas. Bloqueio temporario.</li>
+<li><strong class="c-red">"E-mail ou senha incorretos"</strong> - Credenciais invalidas. Mostra tentativas restantes.</li>
+</ul>
+</div>
+
+<h2>2.2 Tela de Registro - /register</h2>
+
+<div class="screen-header">Tela: Registro</div>
+<div class="screen-body">
+<h4>Descricao</h4>
+<p>Card central sobre fundo cinza claro. Seis campos de formulario com icones. Validacao de senha em tempo real com checklist. Ao concluir, o status do usuario e <strong>PENDENTE</strong> e ele aguarda aprovacao do administrador.</p>
+
+<h4>Campos do Formulario</h4>
+<table>
+<thead><tr><th>Campo</th><th>Tipo</th><th>Validacao</th></tr></thead>
+<tbody>
+<tr><td>Nome Completo</td><td>Texto</td><td>Minimo 3 caracteres</td></tr>
+<tr><td>E-mail</td><td>E-mail</td><td>Formato valido, unico</td></tr>
+<tr><td>CPF</td><td>Texto</td><td>11 digitos numericos, unico</td></tr>
+<tr><td>Telefone</td><td>Texto</td><td>Formato brasileiro</td></tr>
+<tr><td>Senha</td><td>Password</td><td>12+ chars, maiuscula, minuscula, numero, especial</td></tr>
+<tr><td>Confirmar Senha</td><td>Password</td><td>Identico ao campo Senha</td></tr>
+</tbody>
+</table>
+
+<h4>Botoes e Acoes</h4>
+<table>
+<thead><tr><th>Botao</th><th>Texto na Tela</th><th>Acao</th><th>Comando / Funcao</th></tr></thead>
+<tbody>
+<tr><td>Primario</td><td>"Criar Conta"</td><td>Salvar cadastro</td><td>Chama <code>authService.register(data)</code>. Cria usuario com status PENDENTE. Redireciona para tela de Cadastro Pendente.</td></tr>
+<tr><td>Secundario</td><td>"Voltar para login"</td><td>Cancelar registro</td><td>Navega para <code>/login</code> sem salvar dados.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>2.3 Tela de Cadastro Pendente</h2>
+
+<div class="screen-header">Tela: Cadastro Pendente</div>
+<div class="screen-body">
+<h4>Descricao</h4>
+<p>Tela exibida apos registro bem-sucedido ou quando um usuario pendente tenta fazer login. Mostra icone de relogio amarelo e mensagem informativa.</p>
+
+<h4>Botoes e Acoes</h4>
+<table>
+<thead><tr><th>Botao</th><th>Texto na Tela</th><th>Acao</th><th>Comando / Funcao</th></tr></thead>
+<tbody>
+<tr><td>Secundario</td><td>"Voltar ao Login"</td><td>Retornar ao login</td><td>Limpa estado de aprovacao pendente e navega para <code>/login</code>.</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ==================== SECAO 3 ==================== -->
+<h1>3. Painel Principal (Dashboard) - /dashboard</h1>
+
+<div class="screen-header">Tela: Dashboard</div>
+<div class="screen-body">
+<h4>Descricao</h4>
+<p>Tela inicial apos login. Layout com <strong>sidebar esquerda</strong> (navegacao) + <strong>header superior</strong> (busca, notificacoes, avatar) + <strong>area principal</strong> com cards e graficos.</p>
+
+<h4>Componentes Visuais</h4>
+<ul>
+<li><strong>4 Cards de KPIs:</strong> Total de Oportunidades, Visitas do Mes, Taxa de Conversao, Negocios Fechados.</li>
+<li><strong>Pipeline Visual:</strong> 5 cards coloridos sequenciais representando as fases do funil (Lead - Contato - Visita Agendada - Em Negociacao - Negocio Fechado).</li>
+<li><strong>Ranking:</strong> Top sucateiros por volume.</li>
+<li><strong>Visitas Proximas:</strong> Lista das 5 proximas visitas.</li>
+<li><strong>Alertas:</strong> Notificacoes de mercado.</li>
+</ul>
+
+<h4>Botoes e Acoes (dentro do Dashboard)</h4>
+<table>
+<thead><tr><th>Botao</th><th>Texto / Aparência</th><th>Acao</th><th>Comando / Funcao</th></tr></thead>
+<tbody>
+<tr><td>Sidebar</td><td>"Dashboard", "Oportunidades", "Visitas", "Inteligência", "Relatorios", "Usuarios", "Configuracoes"</td><td>Navegar entre modulos</td><td>Navegacao React Router para cada rota.</td></tr>
+<tr><td>Buscar</td><td>Input com icone lupa</td><td>Busca global</td><td>Filtra dados em tempo real.</td></tr>
+<tr><td>Notificacoes</td><td>Sino com badge numerico</td><td>Ver alertas</td><td>Abre dropdown com notificacoes.</td></tr>
+<tr><td>Avatar</td><td>Foto do usuario + nome</td><td>Menu rapido</td><td>Dropdown com "Configuracoes" e "Sair".</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ==================== SECAO 4 ==================== -->
+<h1>4. Modulo de Oportunidades</h1>
+
+<h2>4.1 Lista de Oportunidades - /opportunities</h2>
+
+<div class="screen-header">Tela: Lista de Oportunidades</div>
+<div class="screen-body">
+<h4>Descricao</h4>
+<p>Header azul escuro com titulo e botao "Nova Oportunidade". Filtros por abas (Todos, Lead, Visita, Negocio, Tipo, Cidade). Tabela com paginacao. Cada linha mostra empresa, fase (badge colorido), tipo e acoes.</p>
+
+<h4>Botoes e Acoes</h4>
+<table>
+<thead><tr><th>Botao</th><th>Texto / Aparência</th><th>Acao</th><th>Comando / Funcao</th></tr></thead>
+<tbody>
+<tr><td>Primario</td><td>"Nova Oportunidade" (azul, icone +)</td><td>Abrir modal de cadastro</td><td>Abre <code>&lt;ModalNewOpportunity&gt;</code>.</td></tr>
+<tr><td>Filtros</td><td>Abas: Todos, Lead, Visita, Negocio, Tipo, Cidade</td><td>Filtrar lista</td><td>Atualiza query do React Query.</td></tr>
+<tr><td>Icone</td><td>Lapis (editar)</td><td>Editar oportunidade</td><td>Navega para <code>/opportunities/:id</code>.</td></tr>
+<tr><td>Icone</td><td>Olho (visualizar)</td><td>Ver detalhes</td><td>Navega para <code>/opportunities/:id</code>.</td></tr>
+<tr><td>Icone</td><td>Lixeira (excluir)</td><td>Excluir oportunidade</td><td>Chama <code>deleteOpportunity(id)</code> com confirmacao.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>4.2 Modal: Nova Oportunidade</h2>
+
+<div class="screen-header">Componente: ModalNewOpportunity</div>
+<div class="screen-body">
+<h4>Descricao</h4>
+<p>Modal overlay escuro com card central branco. Formulario em duas colunas para cadastro rapido. Campos: nome, tipo (Sucateiro / Fonte Geradora / Lote Spot), documento (CPF/CNPJ), endereco, telefone, e-mail.</p>
+
+<h4>Botoes e Acoes</h4>
+<table>
+<thead><tr><th>Botao</th><th>Texto na Tela</th><th>Acao</th><th>Comando / Funcao</th></tr></thead>
+<tbody>
+<tr><td>Primario</td><td>"Criar Oportunidade"</td><td>Salvar novo registro</td><td>Chama <code>createOpportunity(data)</code>. Fecha modal. Invalida cache. Mostra toast de sucesso.</td></tr>
+<tr><td>Secundario</td><td>"Cancelar"</td><td>Fechar sem salvar</td><td>Fecha modal. Descarta dados do formulario. Nenhuma requisicao e feita.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>4.3 Detalhe da Oportunidade - /opportunities/:id</h2>
+
+<div class="screen-header">Tela: Detalhe da Oportunidade</div>
+<div class="screen-body">
+<h4>Descricao</h4>
+<p>Header escuro com seta "Voltar", nome da empresa e badge de status (ex: "Negocio Fechado" em verde). Info cards (Telefone, E-mail, Responsavel). Navegacao por 5 abas. Borda ativa azul na aba selecionada.</p>
+
+<h4>Botoes e Acoes (Header)</h4>
+<table>
+<thead><tr><th>Botao</th><th>Texto na Tela</th><th>Acao</th><th>Comando / Funcao</th></tr></thead>
+<tbody>
+<tr><td>Icone + Texto</td><td>"← Voltar"</td><td>Retornar a lista</td><td>Navega para <code>/opportunities</code> usando <code>navigate(-1)</code>.</td></tr>
+</tbody>
+</table>
+
+<h4>Abas Disponiveis</h4>
+<table>
+<thead><tr><th>Aba</th><th>Conteudo</th><th>Botoes Internos</th></tr></thead>
+<tbody>
+<tr><td>Informacoes</td><td>Dados da empresa, endereco, tipo de sucata, quantidade, preco concorrente</td><td>"Cancelar", "Salvar"</td></tr>
+<tr><td>Contatos</td><td>Lista de pessoas de contato com cargo, telefone, e-mail, redes sociais</td><td>"Adicionar Contato", "Editar", "Excluir"</td></tr>
+<tr><td>Visitas</td><td>Historico de visitas agendadas e concluidas</td><td>"Agendar Visita"</td></tr>
+<tr><td>Fotos</td><td>Galeria de imagens categorizadas (sucata, local, acesso, cacamba)</td><td>"Adicionar Foto", "Excluir"</td></tr>
+<tr><td>Timeline</td><td>Linha do tempo automatica com todas as acoes (criacao, mudanca de fase, visitas)</td><td>Nenhum - apenas visualizacao</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>4.3.1 Aba: Informacoes</h3>
+<div class="box">
+<h4>Botoes e Acoes</h4>
+<div class="btn-row"><span class="btn-name">"Cancelar"</span> <span class="btn-desc">- Descarta alteracoes e restaura valores originais.</span> <span class="btn-cmd">Comando: Reseta formulario React Hook Form.</span></div>
+<div class="btn-row"><span class="btn-name">"Salvar"</span> <span class="btn-desc">- Envia dados editados para o backend.</span> <span class="btn-cmd">Comando: Chama <code>updateOpportunity(id, data)</code>. Invalida cache. Toast "Dados salvos".</span></div>
+</div>
+
+<h3>4.3.2 Aba: Contatos</h3>
+<div class="box">
+<h4>Botoes e Acoes</h4>
+<div class="btn-row"><span class="btn-name">"Adicionar Contato"</span> <span class="btn-desc">- Abre modal para cadastrar nova pessoa.</span> <span class="btn-cmd">Comando: Abre modal com <code>createContact(data)</code>.</span></div>
+<div class="btn-row"><span class="btn-name">"Editar" (por contato)</span> <span class="btn-desc">- Altera dados do contato.</span> <span class="btn-cmd">Comando: <code>updateContact(id, data)</code>.</span></div>
+<div class="btn-row"><span class="btn-name">"Excluir" (por contato)</span> <span class="btn-desc">- Remove contato.</span> <span class="btn-cmd">Comando: <code>deleteContact(id)</code> com confirmacao.</span></div>
+</div>
+
+<h3>4.3.3 Aba: Visitas</h3>
+<div class="box">
+<h4>Botoes e Acoes</h4>
+<div class="btn-row"><span class="btn-name">"Agendar Visita"</span> <span class="btn-desc">- Abre modal de agendamento.</span> <span class="btn-cmd">Comando: Navega para <code>/visits</code> com pre-selecao da oportunidade.</span></div>
+</div>
+
+<h3>4.3.4 Aba: Fotos</h3>
+<div class="box">
+<h4>Botoes e Acoes</h4>
+<div class="btn-row"><span class="btn-name">"Adicionar Foto"</span> <span class="btn-desc">- Upload de imagem com categoria.</span> <span class="btn-cmd">Comando: <code>uploadPhoto(opportunityId, file, category)</code>.</span></div>
+<div class="btn-row"><span class="btn-name">"Excluir" (por foto)</span> <span class="btn-desc">- Remove imagem.</span> <span class="btn-cmd">Comando: <code>deletePhoto(id)</code> com confirmacao.</span></div>
+</div>
+
+<h3>4.3.5 Aba: Timeline</h3>
+<div class="box">
+<p><strong>Apenas visualizacao.</strong> Linha do tempo automatica gerada pelo sistema. Mostra data, usuario, acao e detalhes. Sem botoes de acao.</p>
+</div>
+
+<!-- ==================== SECAO 5 ==================== -->
+<h1>5. Modulo de Visitas</h1>
+
+<h2>5.1 Lista de Visitas - /visits</h2>
+
+<div class="screen-header">Tela: Visitas</div>
+<div class="screen-body">
+<h4>Descricao</h4>
+<p>Calendario mensal com pontos coloridos nos dias que tem visitas. Abaixo, lista de visitas da semana em cards. Cada card mostra empresa, data, hora, responsavel e badge de status.</p>
+
+<h4>Legenda de Cores (Status)</h4>
+<table>
+<thead><tr><th>Status</th><th>Cor</th><th>Significado</th></tr></thead>
+<tbody>
+<tr><td>Agendada</td><td>Amarelo (#f59e0b)</td><td>Visita marcada, aguardando confirmacao</td></tr>
+<tr><td>Confirmada</td><td>Azul (#0f3460)</td><td>Visita confirmada pelo fornecedor</td></tr>
+<tr><td>Em Andamento</td><td>Roxo (#8b5cf6)</td><td>Visitante chegou ao local (GPS ativo)</td></tr>
+<tr><td>Concluida</td><td>Verde (#10b981)</td><td>Visita finalizada com resultado</td></tr>
+<tr><td>Cancelada</td><td>Vermelho (#ef4444)</td><td>Visita cancelada</td></tr>
+</tbody>
+</table>
+
+<h4>Botoes e Acoes</h4>
+<table>
+<thead><tr><th>Botao</th><th>Texto na Tela</th><th>Acao</th><th>Comando / Funcao</th></tr></thead>
+<tbody>
+<tr><td>Primario</td><td>"Nova Visita" (azul, icone +)</td><td>Abrir modal de agendamento</td><td>Abre <code>&lt;ModalNewVisit&gt;</code>.</td></tr>
+<tr><td>Acao</td><td>"Confirmar"</td><td>Confirmar visita agendada</td><td><code>updateVisit(id, { status: 'CONFIRMED' })</code>.</td></tr>
+<tr><td>Acao</td><td>"Iniciar"</td><td>Iniciar visita (ativa GPS)</td><td><code>updateVisit(id, { status: 'IN_PROGRESS' })</code>. Captura latitude/longitude do navegador.</td></tr>
+<tr><td>Acao</td><td>"Concluir"</td><td>Finalizar visita</td><td>Abre modal de conclusao.</td></tr>
+<tr><td>Perigo</td><td>"Cancelar"</td><td>Cancelar visita</td><td><code>updateVisit(id, { status: 'CANCELLED' })</code> com confirmacao.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>5.2 Modal: Nova Visita</h2>
+
+<div class="screen-header">Componente: Modal - Nova Visita</div>
+<div class="screen-body">
+<h4>Descricao</h4>
+<p>Modal com formulario de agendamento. Campos: oportunidade (dropdown), data e hora, duracao estimada, objetivos, checklist previo.</p>
+
+<h4>Botoes e Acoes</h4>
+<table>
+<thead><tr><th>Botao</th><th>Texto na Tela</th><th>Acao</th><th>Comando / Funcao</th></tr></thead>
+<tbody>
+<tr><td>Primario</td><td>"Agendar Visita"</td><td>Salvar agendamento</td><td><code>createVisit(data)</code>. Fecha modal. Invalida cache de visitas.</td></tr>
+<tr><td>Secundario</td><td>"Cancelar"</td><td>Fechar sem salvar</td><td>Fecha modal. Limpa formulario.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>5.3 Modal: Concluir Visita (GPS)</h2>
+
+<div class="screen-header">Componente: Modal - Concluir Visita</div>
+<div class="screen-body">
+<h4>Descricao</h4>
+<p>Modal exibido quando o usuario clica em "Concluir". Mostra resultado da validacao GPS (distancia do local cadastrado), checklist de verificacao e campo para observacoes tecnicas.</p>
+
+<h4>Botoes e Acoes</h4>
+<table>
+<thead><tr><th>Botao</th><th>Texto na Tela</th><th>Acao</th><th>Comando / Funcao</th></tr></thead>
+<tbody>
+<tr><td>Primario</td><td>"Concluir Visita"</td><td>Finalizar com resultado</td><td><code>updateVisit(id, { status: 'COMPLETED', result, observations })</code>. Valida GPS.</td></tr>
+<tr><td>Secundario</td><td>"Cancelar"</td><td>Fechar sem concluir</td><td>Fecha modal. Visita permanece "Em Andamento".</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ==================== SECAO 6 ==================== -->
+<h1>6. Modulo de Inteligencia de Mercado - /market-intel</h1>
+
+<div class="screen-header">Tela: Inteligencia de Mercado</div>
+<div class="screen-body">
+<h4>Descricao</h4>
+<p>Layout em grid de cards. Cada card representa uma informacao de mercado: nome do concorrente (badge vermelho), preco por kg em destaque amarelo, tipo de sucata, regiao, descricao e data.</p>
+
+<h4>Tipos de Inteligencia (Tags)</h4>
+<table>
+<thead><tr><th>Tipo</th><th>Cor</th><th>Descricao</th></tr></thead>
+<tbody>
+<tr><td>Preco da Concorrencia</td><td>Vermelho</td><td>Preco praticado por concorrente</td></tr>
+<tr><td>Tendencia de Mercado</td><td>Verde</td><td>Alta, baixa ou estavel</td></tr>
+<tr><td>Mudanca de Fornecedor</td><td>Roxo</td><td>Fornecedor trocou de comprador</td></tr>
+<tr><td>Variacao de Preco</td><td>Amarelo</td><td>Aumento ou queda detectada</td></tr>
+<tr><td>Novo Concorrente</td><td>Azul</td><td>Nova empresa no mercado</td></tr>
+</tbody>
+</table>
+
+<h4>Botoes e Acoes</h4>
+<table>
+<thead><tr><th>Botao</th><th>Texto na Tela</th><th>Acao</th><th>Comando / Funcao</th></tr></thead>
+<tbody>
+<tr><td>Primario</td><td>"Nova Informacao"</td><td>Abrir modal de cadastro</td><td>Abre <code>&lt;ModalNewIntel&gt;</code>.</td></tr>
+<tr><td>Filtro</td><td>Dropdown por tipo</td><td>Filtrar por categoria</td><td>Atualiza lista filtrada.</td></tr>
+<tr><td>Busca</td><td>Input com lupa</td><td>Pesquisar por concorrente</td><td>Busca textual no backend.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Modal: Nova Informacao</h3>
+<div class="box">
+<h4>Botoes e Acoes</h4>
+<div class="btn-row"><span class="btn-name">"Salvar Informacao"</span> <span class="btn-desc">- Cadastra nova inteligencia de mercado.</span> <span class="btn-cmd">Comando: <code>createMarketIntel(data)</code>.</span></div>
+<div class="btn-row"><span class="btn-name">"Cancelar"</span> <span class="btn-desc">- Fecha modal sem salvar.</span> <span class="btn-cmd">Comando: Fecha overlay. Limpa estado.</span></div>
+</div>
+
+<!-- ==================== SECAO 7 ==================== -->
+<h1>7. Modulo de Relatorios - /reports</h1>
+
+<div class="screen-header">Tela: Relatorios</div>
+<div class="screen-body">
+<h4>Descricao</h4>
+<p>Painel gerencial com 4 KPIs no topo, filtros de periodo (Semana / Mes / Trimestre / Ano) e grafico de pipeline. Botao de exportar dados. <strong>Requer perfil Gerente ou superior.</strong></p>
+
+<h4>Botoes e Acoes</h4>
+<table>
+<thead><tr><th>Botao</th><th>Texto na Tela</th><th>Acao</th><th>Comando / Funcao</th></tr></thead>
+<tbody>
+<tr><td>Tabs</td><td>"Semana", "Mes", "Trimestre", "Ano"</td><td>Alterar periodo</td><td>Recalcula KPIs e grafico.</td></tr>
+<tr><td>Secundario</td><td>"Exportar" (icone download)</td><td>Baixar relatorio</td><td>Gera CSV/PDF com dados filtrados.</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ==================== SECAO 8 ==================== -->
+<h1>8. Modulo de Usuarios</h1>
+
+<h2>8.1 Lista de Usuarios - /users</h2>
+
+<div class="screen-header">Tela: Usuarios</div>
+<div class="screen-body">
+<h4>Descricao</h4>
+<p>Barra de estatisticas no topo (Total, Ativos, Com 2FA, Pendentes). Tabela com avatar, nome, e-mail, badge de cargo colorido, badge de status, icone de 2FA, ultimo acesso e menu de acoes (3 pontos verticais).</p>
+
+<h4>Botoes e Acoes</h4>
+<table>
+<thead><tr><th>Botao</th><th>Texto / Aparência</th><th>Acao</th><th>Comando / Funcao</th></tr></thead>
+<tbody>
+<tr><td>Primario</td><td>"Novo Usuario"</td><td>Criar usuario manualmente</td><td>Abre modal com formulario.</td></tr>
+<tr><td>Filtro</td><td>Dropdown por cargo</td><td>Filtrar por perfil</td><td>Atualiza tabela filtrada.</td></tr>
+<tr><td>Filtro</td><td>Dropdown por status</td><td>Filtrar por status</td><td>Atualiza tabela filtrada.</td></tr>
+<tr><td>Menu</td><td>3 pontos verticais</td><td>Abrir acoes por usuario</td><td>Dropdown com: Editar, Suspender, Ativar, Resetar Senha.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>8.2 Modal: Editar Usuario</h2>
+
+<div class="screen-header">Componente: Modal - Editar Usuario</div>
+<div class="screen-body">
+<h4>Botoes e Acoes</h4>
+<table>
+<thead><tr><th>Botao</th><th>Texto na Tela</th><th>Acao</th><th>Comando / Funcao</th></tr></thead>
+<tbody>
+<tr><td>Primario</td><td>"Salvar Alteracoes"</td><td>Salvar dados editados</td><td><code>updateUser(id, data)</code>.</td></tr>
+<tr><td>Secundario</td><td>"Cancelar"</td><td>Descartar alteracoes</td><td>Fecha modal. Restaura dados originais.</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ==================== SECAO 9 ==================== -->
+<h1>9. Aprovacao de Usuarios - /admin/user-approval</h1>
+
+<div class="screen-header">Tela: Aprovacao de Usuarios (Admin)</div>
+<div class="screen-body">
+<h4>Descricao</h4>
+<p>Tela exclusiva para <strong>ADMIN</strong> e <strong>DIRETOR</strong>. Mostra badge amarelo "X pendentes" no titulo. Info box explicando o processo. Tabela com cabecalho azul escuro e texto branco. Cada linha tem dois botoes lado a lado.</p>
+
+<h4>Botoes e Acoes</h4>
+<table>
+<thead><tr><th>Botao</th><th>Texto na Tela</th><th>Acao</th><th>Comando / Funcao</th></tr></thead>
+<tbody>
+<tr><td>Sucesso</td><td>"Aprovar" (verde, icone ✓)</td><td>Aprovar cadastro</td><td>Abre modal para escolher perfil (Partner, Buyer, Analyst, etc.). Depois chama <code>approveUser(id, role)</code>. Status vira ACTIVE.</td></tr>
+<tr><td>Perigo</td><td>"Rejeitar" (vermelho, icone ✗)</td><td>Rejeitar cadastro</td><td>Abre modal para informar motivo. Depois chama <code>rejectUser(id, reason)</code>. Status vira REJECTED.</td></tr>
+</tbody>
+</table>
+
+<h4>Modal: Aprovar Usuario</h4>
+<div class="box">
+<div class="btn-row"><span class="btn-name">Dropdown de perfil:</span> <span class="btn-desc">Sucateiro Parceiro, Comprador, Analista, Gerente, Diretor, Coordenador de Inteligencia, Administrador.</span></div>
+<div class="btn-row"><span class="btn-name">"Confirmar Aprovacao"</span> <span class="btn-cmd">Comando: <code>approveUser(userId, selectedRole)</code>.</span></div>
+<div class="btn-row"><span class="btn-name">"Cancelar"</span> <span class="btn-cmd">Comando: Fecha modal sem aprovar.</span></div>
+</div>
+</div>
+
+<!-- ==================== SECAO 10 ==================== -->
+<h1>10. Configuracoes - /settings</h1>
+
+<div class="screen-header">Tela: Configuracoes</div>
+<div class="screen-body">
+<h4>Descricao</h4>
+<p>Tela com tres abas arredondadas no topo. Card branco com formulario. Cada aba tem seus proprios campos e botoes de acao na base.</p>
+</div>
+
+<h2>10.1 Aba: Perfil</h2>
+<div class="box">
+<h4>Campos</h4>
+<p>Nome, E-mail, Telefone, CPF. Area de upload de foto com circulo pontilhado e icone de camera.</p>
+<h4>Botoes</h4>
+<div class="btn-row"><span class="btn-name">"Salvar Alteracoes"</span> <span class="btn-desc">- Salva dados do perfil.</span> <span class="btn-cmd">Comando: <code>updateProfile(data)</code>. Toast "Perfil atualizado".</span></div>
+<div class="btn-row"><span class="btn-name">"Cancelar"</span> <span class="btn-desc">- Descarta alteracoes.</span> <span class="btn-cmd">Comando: Reseta formulario. Mantem dados originais.</span></div>
+</div>
+
+<h2>10.2 Aba: Seguranca</h2>
+<div class="box">
+<h4>Campos</h4>
+<p>Senha atual, Nova senha, Confirmar nova senha. Checklist de forca da senha (12+ caracteres, maiuscula, minuscula, numero, especial).</p>
+<h4>Botoes</h4>
+<div class="btn-row"><span class="btn-name">"Salvar Nova Senha"</span> <span class="btn-desc">- Altera senha do usuario.</span> <span class="btn-cmd">Comando: <code>changePassword({ currentPassword, newPassword })</code>. Verifica senha atual com bcrypt.</span></div>
+<div class="btn-row"><span class="btn-name">"Cancelar"</span> <span class="btn-desc">- Limpa campos de senha.</span> <span class="btn-cmd">Comando: Reseta campos de senha.</span></div>
+</div>
+
+<h2>10.3 Aba: Notificacoes</h2>
+<div class="box">
+<h4>Campos</h4>
+<p>Checkboxes: Receber alertas de visita, Receber alertas de mercado, Receber alertas de aprovacao, Receber resumo semanal.</p>
+<h4>Botoes</h4>
+<div class="btn-row"><span class="btn-name">"Salvar Preferencias"</span> <span class="btn-desc">- Salva configuracoes de notificacao.</span> <span class="btn-cmd">Comando: <code>updatePreferences(data)</code>.</span></div>
+<div class="btn-row"><span class="btn-name">"Cancelar"</span> <span class="btn-desc">- Descarta alteracoes.</span> <span class="btn-cmd">Comando: Restaura checkboxes para estado anterior.</span></div>
+</div>
+
+<!-- ==================== SECAO 11 ==================== -->
+<h1>11. Layout Global - Sidebar e Header</h1>
+
+<div class="screen-header">Componente: Layout (Sidebar + Header)</div>
+<div class="screen-body">
+<h4>Sidebar (Esquerda, 256px)</h4>
+<p>Lista vertical de navegacao com icones. Item ativo: fundo azul claro (#e3f2fd), borda esquerda azul (#0f3460), texto azul escuro. Itens inativos: fundo branco, texto cinza.</p>
+
+<h4>Itens da Sidebar</h4>
+<table>
+<thead><tr><th>Icone</th><th>Texto</th><th>Rota</th><th>Permissao</th></tr></thead>
+<tbody>
+<tr><td>📊</td><td>Dashboard</td><td>/dashboard</td><td>Todos</td></tr>
+<tr><td>🏭</td><td>Oportunidades</td><td>/opportunities</td><td>Todos</td></tr>
+<tr><td>🚗</td><td>Visitas</td><td>/visits</td><td>Todos</td></tr>
+<tr><td>📈</td><td>Inteligencia</td><td>/market-intel</td><td>Todos</td></tr>
+<tr><td>📄</td><td>Relatorios</td><td>/reports</td><td>Gerente+</td></tr>
+<tr><td>👥</td><td>Usuarios</td><td>/users</td><td>Admin</td></tr>
+<tr><td>✅</td><td>Aprovacoes</td><td>/admin/user-approval</td><td>Admin/Diretor</td></tr>
+<tr><td>⚙️</td><td>Configuracoes</td><td>/settings</td><td>Todos</td></tr>
+</tbody>
+</table>
+
+<h4>Botao Sair (Sidebar)</h4>
+<div class="box">
+<div class="btn-row"><span class="btn-name">"Sair"</span> <span class="btn-desc">- Encerra sessao e retorna ao login.</span> <span class="btn-cmd">Comando: <code>authService.logout()</code>. Limpa token do localStorage. Limpa cache React Query. Navega para <code>/login</code>.</span></div>
+</div>
+
+<h4>Header (Superior, 64px)</h4>
+<p>Barra branca com sombra inferior. Esquerda: botao de colapsar sidebar. Centro: input de busca com icone lupa. Direita: sino de notificacoes (com badge vermelho de contagem) + avatar circular do usuario + nome.</p>
+
+<h4>Dropdown do Avatar</h4>
+<table>
+<thead><tr><th>Item</th><th>Acao</th></tr></thead>
+<tbody>
+<tr><td>Meu Perfil</td><td>Navega para /settings</td></tr>
+<tr><td>Sair</td><td>Executa logout completo</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ==================== SECAO 12 ==================== -->
+<h1>12. Resumo de Todos os Botoes do Sistema</h1>
+
+<h2>12.1 Botoes de SAIR</h2>
+<table>
+<thead><tr><th>Tela</th><th>Botao</th><th>Local</th><th>Acao Completa</th></tr></thead>
+<tbody>
+<tr><td>Todas (com sidebar)</td><td>"Sair" (icone porta)</td><td>Sidebar inferior</td><td>Chama <code>logout()</code>, limpa token, limpa cache, navega para /login.</td></tr>
+<tr><td>Todas (com header)</td><td>"Sair"</td><td>Dropdown do avatar</td><td>Mesma acao acima.</td></tr>
+<tr><td>Registro</td><td>"Voltar para login"</td><td>Abaixo do formulario</td><td>Navega para /login sem salvar dados.</td></tr>
+<tr><td>Cadastro Pendente</td><td>"Voltar ao Login"</td><td>Centro da tela</td><td>Limpa estado pendente. Navega para /login.</td></tr>
+</tbody>
+</table>
+
+<h2>12.2 Botoes de VOLTAR</h2>
+<table>
+<thead><tr><th>Tela</th><th>Botao</th><th>Local</th><th>Acao Completa</th></tr></thead>
+<tbody>
+<tr><td>Detalhe da Oportunidade</td><td>"← Voltar"</td><td>Header esquerdo</td><td><code>navigate(-1)</code> - retorna a lista de oportunidades.</td></tr>
+<tr><td>Detalhe da Visita</td><td>"← Voltar"</td><td>Header esquerdo</td><td>Retorna a lista de visitas.</td></tr>
+</tbody>
+</table>
+
+<h2>12.3 Botoes de CANCELAR</h2>
+<table>
+<thead><tr><th>Tela / Modal</th><th>Botao</th><th>Contexto</th><th>Acao Completa</th></tr></thead>
+<tbody>
+<tr><td>Configuracoes (Perfil)</td><td>"Cancelar"</td><td>Aba Perfil</td><td>Reseta formulario. Restaura valores originais do perfil.</td></tr>
+<tr><td>Configuracoes (Senha)</td><td>"Cancelar"</td><td>Aba Seguranca</td><td>Limpa campos de senha. Mantem senha atual.</td></tr>
+<tr><td>Configuracoes (Notificacoes)</td><td>"Cancelar"</td><td>Aba Notificacoes</td><td>Restaura checkboxes para estado anterior.</td></tr>
+<tr><td>Modal: Nova Oportunidade</td><td>"Cancelar"</td><td>Modal</td><td>Fecha modal. Descarta dados do formulario.</td></tr>
+<tr><td>Modal: Nova Visita</td><td>"Cancelar"</td><td>Modal</td><td>Fecha modal. Limpa formulario.</td></tr>
+<tr><td>Modal: Concluir Visita</td><td>"Cancelar"</td><td>Modal</td><td>Fecha modal. Visita permanece "Em Andamento".</td></tr>
+<tr><td>Modal: Nova Informacao</td><td>"Cancelar"</td><td>Modal</td><td>Fecha modal. Limpa estado.</td></tr>
+<tr><td>Modal: Editar Usuario</td><td>"Cancelar"</td><td>Modal</td><td>Fecha modal. Restaura dados originais.</td></tr>
+<tr><td>Modal: Aprovar Usuario</td><td>"Cancelar"</td><td>Modal</td><td>Fecha modal sem aprovar. Usuario continua PENDENTE.</td></tr>
+<tr><td>Detalhe: Informacoes</td><td>"Cancelar"</td><td>Aba Informacoes</td><td>Descarta edicao. Restaura valores do formulario.</td></tr>
+</tbody>
+</table>
+
+<h2>12.4 Botoes de SALVAR</h2>
+<table>
+<thead><tr><th>Tela / Modal</th><th>Botao</th><th>Contexto</th><th>Acao Completa</th></tr></thead>
+<tbody>
+<tr><td>Configuracoes (Perfil)</td><td>"Salvar Alteracoes"</td><td>Aba Perfil</td><td><code>updateProfile(data)</code>. Valida campos. Toast "Perfil atualizado".</td></tr>
+<tr><td>Configuracoes (Senha)</td><td>"Salvar Nova Senha"</td><td>Aba Seguranca</td><td><code>changePassword({ current, new })</code>. Verifica senha atual. Atualiza hash.</td></tr>
+<tr><td>Configuracoes (Notificacoes)</td><td>"Salvar Preferencias"</td><td>Aba Notificacoes</td><td><code>updatePreferences(data)</code>. Salva checkbox states.</td></tr>
+<tr><td>Modal: Nova Oportunidade</td><td>"Criar Oportunidade"</td><td>Modal</td><td><code>createOpportunity(data)</code>. Invalida cache. Toast "Oportunidade criada".</td></tr>
+<tr><td>Modal: Nova Visita</td><td>"Agendar Visita"</td><td>Modal</td><td><code>createVisit(data)</code>. Invalida cache. Toast "Visita agendada".</td></tr>
+<tr><td>Modal: Concluir Visita</td><td>"Concluir Visita"</td><td>Modal</td><td><code>updateVisit(id, { status: 'COMPLETED', ... })</code>. Valida GPS.</td></tr>
+<tr><td>Modal: Nova Informacao</td><td>"Salvar Informacao"</td><td>Modal</td><td><code>createMarketIntel(data)</code>. Invalida cache.</td></tr>
+<tr><td>Modal: Editar Usuario</td><td>"Salvar Alteracoes"</td><td>Modal</td><td><code>updateUser(id, data)</code>.</td></tr>
+<tr><td>Detalhe: Informacoes</td><td>"Salvar"</td><td>Aba Informacoes</td><td><code>updateOpportunity(id, data)</code>. Invalida cache.</td></tr>
+</tbody>
+</table>
+
+<h2>12.5 Botoes de ACAO (Aprovar, Rejeitar, Suspender, etc.)</h2>
+<table>
+<thead><tr><th>Tela</th><th>Botao</th><th>Acao Completa</th></tr></thead>
+<tbody>
+<tr><td>Aprovacao de Usuarios</td><td>"Aprovar" (verde)</td><td>Abre modal de escolha de perfil - <code>approveUser(id, role)</code>. Status = ACTIVE.</td></tr>
+<tr><td>Aprovacao de Usuarios</td><td>"Rejeitar" (vermelho)</td><td>Abre modal de motivo - <code>rejectUser(id, reason)</code>. Status = REJECTED.</td></tr>
+<tr><td>Usuarios</td><td>"Suspender"</td><td><code>suspendUser(id)</code>. Status = SUSPENDED. Encerra todas as sessoes.</td></tr>
+<tr><td>Usuarios</td><td>"Ativar"</td><td><code>activateUser(id)</code>. Status = ACTIVE. Permite login novamente.</td></tr>
+<tr><td>Usuarios</td><td>"Resetar Senha"</td><td>Gera token de reset. Envia e-mail (futuro) ou exibe senha temporaria.</td></tr>
+<tr><td>Oportunidades</td><td>"Excluir" (lixeira)</td><td>Confirmacao - <code>deleteOpportunity(id)</code>. Move para status INACTIVE.</td></tr>
+<tr><td>Contatos</td><td>"Excluir"</td><td>Confirmacao - <code>deleteContact(id)</code>.</td></tr>
+<tr><td>Fotos</td><td>"Excluir"</td><td>Confirmacao - <code>deletePhoto(id)</code>.</td></tr>
+</tbody>
+</table>
+
+<div class="sep"></div>
+
+<p class="note" style="text-align:center;"><strong>Documento gerado em 26 de Abril de 2026.</strong> Contem a sequencia completa de 11 telas principais, 6 modais e todos os botoes de Sair, Voltar, Cancelar e Salvar com seus respectivos comandos.</p>
+
+</body>
+</html>

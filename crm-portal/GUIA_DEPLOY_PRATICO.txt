@@ -1,0 +1,297 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║           CRM SUCATA - GUIA PRÁTICO DE DEPLOY NA RAILWAY                   ║
+║                                                                              ║
+║   Siga este guia na ordem. Não pule etapas. Imprima se necessário.          ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+================================================================================
+ETAPA 0: PREPARAÇÃO (faça no seu computador)
+================================================================================
+
+1. Acesse https://railway.app e crie uma conta (use "Continue with GitHub")
+
+2. Instale a CLI do Railway no terminal:
+
+   npm install -g @railway/cli
+
+3. Faça login:
+
+   railway login
+
+   (vai abrir o navegador, clique em autorizar)
+
+
+================================================================================
+ETAPA 1: ENTRAR NA PASTA DO PROJETO
+================================================================================
+
+No terminal, navegue até a pasta:
+
+   cd /mnt/agents/output/crm-portal
+
+Verifique se está no lugar certo:
+
+   ls
+
+Você deve ver: backend/  frontend/  prisma/  README-DEPLOY-CLOUD.md
+
+
+================================================================================
+ETAPA 2: INICIALIZAR PROJETO NA RAILWAY
+================================================================================
+
+Execute:
+
+   railway init
+
+Quando perguntar:
+   - Escolha: "Empty Project"
+   - Nome do projeto: crm-sucata
+
+
+================================================================================
+ETAPA 3: ADICIONAR BANCO DE DADOS POSTGRESQL
+================================================================================
+
+Acesse https://railway.app/dashboard
+
+1. Clique no projeto "crm-sucata"
+2. Clique no botão VERDE "+ New"
+3. Escolha: Database → Add PostgreSQL
+4. Aguarde o status ficar "Running" (verde) - pode levar 1-2 minutos
+
+IMPORTANTE: Anote a DATABASE_URL (veremos no passo 5)
+
+
+================================================================================
+ETAPA 4: DEPLOY DO BACKEND (API)
+================================================================================
+
+Pelo site da Railway (mais fácil):
+
+1. No projeto, clique em "+ New" → "Service"
+2. Escolha "Deploy from Local"
+3. Selecione a pasta: /mnt/agents/output/crm-portal/backend
+4. Metodo de build: Dockerfile
+5. Selecione o arquivo: backend/Dockerfile
+6. Clique "Deploy"
+
+Aguarde o build (3-5 minutos na primeira vez).
+
+
+================================================================================
+ETAPA 5: CONFIGURAR VARIÁVEIS DO BACKEND
+================================================================================
+
+No painel Railway, clique no serviço do backend, vá na aba "Variables"
+
+Adicione estas variáveis (clique em "+ New Variable"):
+
+┌────────────────────────┬──────────────────────────────────────────────────┐
+│ NOME                   │ VALOR                                            │
+├────────────────────────┼──────────────────────────────────────────────────┤
+│ DATABASE_URL           │ Copie do PostgreSQL (veja abaixo)                │
+│ JWT_SECRET             │ crm-sucata-jwt-super-secreto-2026-mudar-depois  │
+│ JWT_REFRESH_SECRET     │ crm-sucata-refresh-super-secreto-2026-mude      │
+│ FRONTEND_URL           │ (deixe VAZIO por enquanto)                      │
+│ NODE_ENV               │ production                                       │
+│ PORT                   │ 3001                                             │
+└────────────────────────┴──────────────────────────────────────────────────┘
+
+COMO PEGAR A DATABASE_URL:
+1. No projeto Railway, clique no serviço PostgreSQL
+2. Vá na aba "Variables"
+3. Copie o valor de DATABASE_URL (algo como postgresql://...)
+4. Cole no backend
+
+
+================================================================================
+ETAPA 6: ANOTAR URL DO BACKEND
+================================================================================
+
+1. No serviço do backend, vá em "Settings"
+2. Procure "Public Domain" ou "URL"
+3. Anote a URL (exemplo: https://crm-sucata-api.up.railway.app)
+
+Você vai precisar desta URL no próximo passo!
+
+TESTE RÁPIDO:
+Cole no navegador: https://SUA-URL.up.railway.app/health
+Se aparecer {"status":"OK"}, funcionou!
+
+
+================================================================================
+ETAPA 7: DEPLOY DO FRONTEND (SITE)
+================================================================================
+
+1. No projeto Railway, clique "+ New" → "Service"
+2. Escolha "Deploy from Local"
+3. Selecione a pasta: /mnt/agents/output/crm-portal/frontend
+4. Metodo de build: Dockerfile
+5. Selecione o arquivo: frontend/Dockerfile
+6. Clique "Deploy"
+
+
+================================================================================
+ETAPA 8: CONFIGURAR VARIÁVEIS DO FRONTEND
+================================================================================
+
+No serviço do frontend, aba "Variables", adicione:
+
+┌────────────────────────┬──────────────────────────────────────────────────┐
+│ NOME                   │ VALOR                                            │
+├────────────────────────┼──────────────────────────────────────────────────┤
+│ VITE_API_URL           │ URL do backend + /api                            │
+│                        │ Ex: https://seu-backend.up.railway.app/api     │
+│ VITE_APP_NAME          │ CRM Sucata                                       │
+│ VITE_APP_VERSION       │ 1.0.0                                            │
+└────────────────────────┴──────────────────────────────────────────────────┘
+
+IMPORTANTE: O VITE_API_URL deve ser a URL do backend (passo 6) + "/api"
+
+
+================================================================================
+ETAPA 9: CONFIGURAR CORS NO BACKEND
+================================================================================
+
+1. Anote a URL do frontend (vá em Settings do serviço frontend → Public Domain)
+   Exemplo: https://crm-sucata-web.up.railway.app
+
+2. Volte no serviço do backend, aba "Variables"
+3. Atualize FRONTEND_URL com a URL do frontend
+4. O backend reinicia automaticamente
+
+
+================================================================================
+ETAPA 10: ACESSAR O CRM
+================================================================================
+
+1. Cole a URL do frontend no navegador
+2. Você verá a tela de login!
+
+
+================================================================================
+ETAPA 11: CRIAR USUÁRIO ADMIN
+================================================================================
+
+1. Clique em "Cadastrar"
+2. Preencha com seus dados
+3. Envie - vai aparecer "Aguardando aprovação"
+
+COMO APROVAR (provisório, via banco de dados):
+
+1. No Railway, clique no serviço PostgreSQL
+2. Vá na aba "Query" ou "Data"
+3. Execute este SQL (substitua pelo seu email):
+
+   UPDATE users
+   SET status = 'ACTIVE', role = 'ADMIN'
+   WHERE email = 'SEU_EMAIL@exemplo.com';
+
+4. Volte no CRM e faça login!
+
+
+================================================================================
+ETAPA 12: IMPORTAR DADOS DO EXCEL (8.072 FONTES)
+================================================================================
+
+1. No seu computador, instale Python e psycopg2:
+
+   pip3 install psycopg2-binary bcrypt
+
+2. Execute o script de importação (copie a DATABASE_URL do Railway):
+
+   cd /mnt/agents/output/crm-portal/backend
+   export DATABASE_URL="postgresql://SEU-USER:SUA-SENHA@SEU-HOST:5432/railway"
+   python3 prisma/import_to_postgres.py
+
+3. Aguarde a importação (pode levar 5-10 minutos)
+
+4. Acesse o CRM → Oportunidades → devem aparecer todas as fontes!
+
+
+================================================================================
+ETAPA 13: CONFIGURAR INTEGRAÇÃO SYGECOM (OPCIONAL)
+================================================================================
+
+Quando quiser ativar:
+
+1. No backend, aba "Variables", adicione:
+
+   SYGECOM_ENABLED = true
+   SYGECOM_WEBHOOK_URL = (URL que o Sygecom fornecer)
+   SYGECOM_API_KEY = (chave que o Sygecom fornecer)
+
+2. Quando uma fonte for "Concluída com Sucesso", os dados vão automaticamente
+   para o Sygecom.
+
+
+================================================================================
+RESUMO DAS URLs IMPORTANTES
+================================================================================
+
+Após o deploy, você terá 3 URLs:
+
+┌────────────────────┬──────────────────────────────────────────────┐
+│ Frontend (site)    │ https://seu-frontend.up.railway.app          │
+│ Backend (API)      │ https://seu-backend.up.railway.app/api       │
+│ Health check       │ https://seu-backend.up.railway.app/health    │
+└────────────────────┴──────────────────────────────────────────────┘
+
+
+================================================================================
+CREDENCIAIS PÓS-DEPLOY
+================================================================================
+
+| Usuário                        | Senha        | Papel       |
+|--------------------------------|-------------|-------------|
+| admin@crm-sucata.com.br        | admin123456 | ADMIN       |
+| jonathas@crm-sucata.com.br     | sucata2026  | COMPRADOR   |
+| daniel@crm-sucata.com.br       | sucata2026  | COMPRADOR   |
+| pedro@crm-sucata.com.br        | sucata2026  | COMPRADOR   |
+| helvio@crm-sucata.com.br       | sucata2026  | COMPRADOR   |
+| bruno@crm-sucata.com.br        | sucata2026  | COMPRADOR   |
+| carlos@crm-sucata.com.br       | sucata2026  | COMPRADOR   |
+| rafael@crm-sucata.com.br       | sucata2026  | COMPRADOR   |
+| fernando@crm-sucata.com.br     | sucata2026  | COMPRADOR   |
+
+
+================================================================================
+SE DER ERRO
+================================================================================
+
+Erro CORS:
+  → Verifique se FRONTEND_URL no backend está com a URL exata do frontend
+
+Frontend não conecta:
+  → Verifique VITE_API_URL (deve ter /api no final)
+
+Erro 500 no backend:
+  → Veja os logs no Railway (clique no serviço → "Deployments" → logs)
+
+Banco não conecta:
+  → Verifique se DATABASE_URL está correta e PostgreSQL está "Running"
+
+Não consigo fazer login:
+  → Verifique se aprovou o usuário com o SQL do passo 11
+
+
+================================================================================
+PRÓXIMOS PASSOS APÓS DEPLOY
+================================================================================
+
+□ Mudar a senha do ADMIN (obrigatório no primeiro login)
+□ Mudar as senhas dos compradores
+□ Aprovar/criar mais usuários conforme necessário
+□ Configurar preços de referência no dashboard
+□ Cadastrar novas oportunidades pelo app Android
+□ Configurar Cloudinary se quiser upload de arquivos persistente
+□ Entrar em contato com Sygecom para ativar integração
+
+
+================================================================================
+DÚVIDAS? VOLTE A ESTE ARQUIVO.
+================================================================================
