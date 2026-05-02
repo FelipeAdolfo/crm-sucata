@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Install dependencies first (layer cache)
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 # Copy Prisma schema and generate client
 COPY prisma ./prisma
@@ -25,7 +25,7 @@ ENV NODE_ENV=production
 
 # Install production dependencies only
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 # Copy Prisma schema and generated client from builder
 COPY prisma ./prisma
