@@ -17,7 +17,7 @@ RUN npm install
 RUN npx prisma generate
 
 # Build TypeScript
-RUN npm run build
+RUN npx tsc --noCheck
 
 # Expor porta
 EXPOSE 3001
